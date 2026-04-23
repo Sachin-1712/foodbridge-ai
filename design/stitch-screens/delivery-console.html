@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodBridge - Logistics Console</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#95d4b3",
+                      "surface-tint": "#2c694e",
+                      "on-tertiary-fixed": "#1a1d07",
+                      "on-secondary-fixed": "#2c1600",
+                      "surface-variant": "#e2e3df",
+                      "on-primary-fixed-variant": "#0e5138",
+                      "secondary-container": "#ffca98",
+                      "surface": "#f9f9f6",
+                      "secondary-fixed": "#ffdcbd",
+                      "on-background": "#1a1c1a",
+                      "error-container": "#ffdad6",
+                      "background": "#f9f9f6",
+                      "secondary": "#7d562d",
+                      "tertiary-fixed-dim": "#c5c9a7",
+                      "inverse-surface": "#2f312f",
+                      "inverse-primary": "#95d4b3",
+                      "inverse-on-surface": "#f1f1ee",
+                      "tertiary-container": "#5d6246",
+                      "primary-fixed": "#b1f0ce",
+                      "surface-container-lowest": "#ffffff",
+                      "outline-variant": "#bfc9c1",
+                      "primary-container": "#2d6a4f",
+                      "secondary-fixed-dim": "#f0bd8b",
+                      "surface-container": "#eeeeeb",
+                      "surface-dim": "#dadad7",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#45492f",
+                      "on-primary-fixed": "#002114",
+                      "on-primary-container": "#a8e7c5",
+                      "on-surface-variant": "#404943",
+                      "outline": "#707973",
+                      "surface-container-highest": "#e2e3df",
+                      "surface-container-high": "#e8e8e5",
+                      "primary": "#0f5238",
+                      "on-surface": "#1a1c1a",
+                      "surface-container-low": "#f4f4f0",
+                      "tertiary-fixed": "#e1e6c2",
+                      "on-error-container": "#93000a",
+                      "on-secondary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "surface-bright": "#f9f9f6",
+                      "tertiary": "#464a30",
+                      "on-secondary-fixed-variant": "#623f18",
+                      "error": "#ba1a1a",
+                      "on-tertiary-container": "#d9ddba",
+                      "on-secondary-container": "#7a532a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "8px",
+                      "xs": "4px",
+                      "gutter": "24px",
+                      "xl": "48px",
+                      "container-max": "1440px",
+                      "md": "16px",
+                      "unit": "4px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "status-badge": [
+                              "Work Sans"
+                      ],
+                      "label-caps": [
+                              "Work Sans"
+                      ],
+                      "h2": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "h3": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Work Sans"
+                      ],
+                      "body-md": [
+                              "Work Sans"
+                      ],
+                      "h1": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "status-badge": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "h2": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "h3": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h1": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .shadow-ambient-lg { box-shadow: 0 12px 32px -4px rgba(45, 106, 79, 0.08), 0 4px 16px -4px rgba(45, 106, 79, 0.04); }
+        .shadow-ambient-sm { box-shadow: 0 4px 12px -2px rgba(45, 106, 79, 0.06); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- JSON Component: SideNavBar (Desktop) -->
+<aside class="hidden md:flex bg-white dark:bg-slate-950 h-screen w-64 fixed left-0 top-0 z-50 shadow-xl border-r border-slate-200 dark:border-slate-800 flex-col h-full py-6">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-[#2D6A4F] font-h3 text-h3 leading-none">FoodBridge</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Efficient Altruism</p>
+</div>
+</div>
+<button class="mx-6 mb-6 h-xl bg-primary text-on-primary rounded-xl font-label-caps text-label-caps flex items-center justify-center gap-2 hover:bg-on-primary-fixed-variant transition-colors shadow-ambient-sm">
+<span class="material-symbols-outlined">add</span>
+            New Donation
+        </button>
+<nav class="flex-1 space-y-1 font-['Plus_Jakarta_Sans'] text-sm">
+<a class="bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[#52B788] font-semibold rounded-lg mx-2 px-4 py-3 flex items-center gap-3 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                Overview
+            </a>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Inventory
+            </a>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">storefront</span>
+                Marketplace
+            </a>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+                Analytics
+            </a>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+                History
+            </a>
+</nav>
+<div class="mt-auto border-t border-outline-variant/30 pt-4 font-['Plus_Jakarta_Sans'] text-sm">
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+                Help Center
+            </a>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Sign Out
+            </a>
+</div>
+</aside>
+<!-- Main Workspace Area -->
+<div class="flex-1 flex flex-col md:ml-64 w-full min-h-screen">
+<!-- JSON Component: TopAppBar -->
+<header class="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md docked full-width top-0 z-40 border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-0 w-full flex justify-between items-center px-6 h-16">
+<div class="flex items-center gap-4">
+<div class="md:hidden text-xl font-bold text-[#2D6A4F] dark:text-[#40916C] tracking-tight">FoodBridge</div>
+<div class="hidden md:flex items-center bg-surface-container-high rounded-full px-4 py-2 text-on-surface-variant focus-within:ring-2 focus-within:ring-primary-container transition-all">
+<span class="material-symbols-outlined text-outline">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface w-64 placeholder:text-outline ml-2" placeholder="Search routes, donors..." type="text"/>
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-6 font-['Plus_Jakarta_Sans'] text-sm font-medium">
+<a class="text-[#2D6A4F] dark:text-[#40916C] border-b-2 border-[#2D6A4F] pb-1 active:scale-95 duration-150" href="#">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#2D6A4F] dark:hover:text-[#52B788] transition-colors active:scale-95 duration-150" href="#">Impact</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#2D6A4F] dark:hover:text-[#52B788] transition-colors active:scale-95 duration-150" href="#">Support</a>
+</nav>
+<div class="flex items-center gap-4 text-[#2D6A4F] dark:text-[#40916C]">
+<button class="hover:bg-surface-container rounded-full p-2 transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+</button>
+<button class="hover:bg-surface-container rounded-full p-2 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-secondary-container overflow-hidden ml-2 border border-outline-variant">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxXXG5OWDnud4ZIy9IGPy3WBZjPdM7puk6G6ecYAVhlBGxWzf_LYNpT_zfugAnT3r8rOGtFU5BdYI-ekzLmyzw79bQ-7lT-SljSgFbDdmGBW3FCOKA9Xb9d6nT88Mv_BCHgFCVuQlQT9t4PIIE5KbOXZFmx3f2hX9WTfkA3WWhS4i_neSp4owxZUPYGAeJbnt2KPkpGTpa-jgYbK5CO_yZO21g9Xuz3QWGwp83XLt5mmKi0It1f7vgQXIDfWmZ3OUjP7AnQfFyikIs"/>
+</div>
+</div>
+</header>
+<!-- Canvas Content -->
+<main class="flex-1 p-gutter pb-24 md:pb-gutter max-w-container-max mx-auto w-full">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-lg">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Logistics Console</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span class="font-label-caps text-label-caps text-primary">Live Operations</span>
+</div>
+<h2 class="font-h1 text-h1 text-on-background">Active Routes</h2>
+</div>
+<div class="flex gap-3">
+<button class="h-xl px-6 rounded-xl bg-surface-container-high text-on-surface font-label-caps text-label-caps flex items-center gap-2 hover:bg-surface-variant transition-colors shadow-sm">
+<span class="material-symbols-outlined text-outline">filter_list</span>
+                        Filter Views
+                    </button>
+<button class="h-xl px-6 rounded-xl bg-primary text-on-primary font-label-caps text-label-caps flex items-center gap-2 hover:bg-on-primary-fixed-variant transition-colors shadow-ambient-sm">
+<span class="material-symbols-outlined">bolt</span>
+                        Auto-Dispatch
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Large Map Panel (Span 8) -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-ambient-lg overflow-hidden border border-outline-variant/20 relative flex flex-col h-[600px]">
+<div class="absolute top-4 left-4 z-10 flex gap-2">
+<div class="bg-surface/90 backdrop-blur-md font-status-badge text-status-badge text-on-surface px-4 py-2 rounded-full shadow-sm border border-outline-variant/30 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">my_location</span>
+                            Route Tracking Active
+                        </div>
+</div>
+<div class="absolute bottom-6 left-6 right-6 z-10 flex gap-4">
+<div class="bg-surface/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-outline-variant/30 flex-1 flex items-center justify-between">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Estimated Arrival</p>
+<p class="font-h3 text-h3 text-on-surface">14 Mins</p>
+</div>
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Distance Remaining</p>
+<p class="font-h3 text-h3 text-on-surface">3.2 mi</p>
+</div>
+</div>
+</div>
+<img class="w-full h-full object-cover" data-alt="Stylized flat interface map focusing on urban streets with a soft cream and sage green color palette, highlighting a primary delivery route with origin and destination waypoints" data-location="Seattle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_sRtwEor6c-rCwGW62jgT9FRV2wH9QhWK_qbJ_CfxU3-3aOxmRf6IlHyBqlOxE56GUStTty4RnVJfPNXzbqyf2ZyrZqiUw2gLmE2izyROVyj5DM06kAkUHUmuPcC-FpVmJyPVbKG0tnzUBw0C_0-bVvbWK-7nJdq2yqR7IcTVBCASQYt4KOnn2pTOYqXPE9wB26qXcKlgrXK3uiuGesEG-awtX2kvxqQ09uR3YYZQsA3QYyL74LicapvLEbEp6mZYmk0dbszRfEVJ"/>
+</div>
+<!-- Detail Panel (Span 4) -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<!-- Primary Route Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-ambient-lg border border-outline-variant/20 p-gutter flex flex-col h-full">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="font-h2 text-h2 text-on-surface mb-1">FD-892</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Perishable Bulk Transport</p>
+</div>
+<!-- Urgent Chip -->
+<div class="bg-error-container text-on-error-container font-status-badge text-status-badge px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse border border-error/20">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">warning</span>
+                                Urgent
+                            </div>
+</div>
+<!-- Contacts Bento Sub-Cards -->
+<div class="flex flex-col gap-3 mb-8">
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">store</span>
+</div>
+<div class="flex-1">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-0.5">Pickup Point</p>
+<p class="font-body-lg text-body-lg font-medium text-on-surface">Whole Foods Market</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mt-1">2200 Westlake Ave, Seattle</p>
+</div>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">call</span>
+</button>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volunteer_activism</span>
+</div>
+<div class="flex-1">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-0.5">Dropoff NGO</p>
+<p class="font-body-lg text-body-lg font-medium text-on-surface">Pike Market Senior Center</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mt-1">85 Pike St #200, Seattle</p>
+</div>
+<button class="text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">call</span>
+</button>
+</div>
+</div>
+<!-- Route Timeline -->
+<div class="flex-1 mb-8">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-4">Journey Status</h4>
+<div class="relative pl-6 space-y-6 before:absolute before:inset-y-2 before:left-[11px] before:w-0.5 before:bg-surface-variant">
+<!-- Step 1: Completed -->
+<div class="relative">
+<div class="absolute -left-[27px] w-6 h-6 rounded-full bg-primary flex items-center justify-center text-on-primary border-4 border-surface-container-lowest z-10">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Driver Assigned</p>
+<p class="font-body-md text-body-md text-sm text-on-surface-variant">08:42 AM</p>
+</div>
+<!-- Step 2: Completed -->
+<div class="relative">
+<div class="absolute -left-[27px] w-6 h-6 rounded-full bg-primary flex items-center justify-center text-on-primary border-4 border-surface-container-lowest z-10">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="font-body-md text-body-md font-medium text-on-surface">En Route to Pickup</p>
+<p class="font-body-md text-body-md text-sm text-on-surface-variant">09:15 AM</p>
+</div>
+<!-- Step 3: Active -->
+<div class="relative">
+<div class="absolute -left-[27px] w-6 h-6 rounded-full bg-surface-container-lowest border-4 border-primary z-10">
+<div class="w-2 h-2 bg-primary rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+</div>
+<div class="bg-primary/10 rounded-lg p-3 -mt-2 inline-block border border-primary/20">
+<p class="font-body-md text-body-md font-medium text-primary">Picked Up</p>
+<p class="font-body-md text-body-md text-sm text-primary/80">In Progress - Awaiting Confirmation</p>
+</div>
+</div>
+<!-- Step 4: Upcoming -->
+<div class="relative opacity-50">
+<div class="absolute -left-[27px] w-6 h-6 rounded-full bg-surface-variant border-4 border-surface-container-lowest z-10"></div>
+<p class="font-body-md text-body-md font-medium text-on-surface">In Transit</p>
+</div>
+<!-- Step 5: Upcoming -->
+<div class="relative opacity-50">
+<div class="absolute -left-[27px] w-6 h-6 rounded-full bg-surface-variant border-4 border-surface-container-lowest z-10"></div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Delivered</p>
+</div>
+</div>
+</div>
+<!-- Action -->
+<button class="mt-auto h-xl w-full bg-primary text-on-primary rounded-xl font-label-caps text-label-caps flex items-center justify-center gap-2 hover:bg-on-primary-fixed-variant transition-all shadow-ambient-sm active:scale-[0.98]">
+                            Confirm Pickup
+                            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- JSON Component: BottomNavBar (Mobile) -->
+<nav class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg fixed bottom-0 w-full rounded-t-2xl z-50 border-t border-[#2D6A4F]/10 shadow-[0_-4px_12px_rgba(45,106,79,0.08)] fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-4 pb-safe md:hidden text-[10px] font-bold uppercase tracking-widest">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 hover:text-[#1B4332] animate-pulse-subtle gap-1" href="#">
+<span class="material-symbols-outlined">home</span>
+            Home
+        </a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 hover:text-[#1B4332] animate-pulse-subtle gap-1" href="#">
+<span class="material-symbols-outlined">search</span>
+            Discover
+        </a>
+<a class="flex flex-col items-center justify-center text-[#2D6A4F] dark:text-[#52B788] scale-110 hover:text-[#1B4332] animate-pulse-subtle gap-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+            Logistics
+        </a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 hover:text-[#1B4332] animate-pulse-subtle gap-1" href="#">
+<span class="material-symbols-outlined">person</span>
+            Profile
+        </a>
+</nav>
+</body></html>

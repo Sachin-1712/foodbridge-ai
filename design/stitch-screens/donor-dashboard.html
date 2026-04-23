@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodBridge - Donor Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#95d4b3",
+                      "surface-tint": "#2c694e",
+                      "on-tertiary-fixed": "#1a1d07",
+                      "on-secondary-fixed": "#2c1600",
+                      "surface-variant": "#e2e3df",
+                      "on-primary-fixed-variant": "#0e5138",
+                      "secondary-container": "#ffca98",
+                      "surface": "#f9f9f6",
+                      "secondary-fixed": "#ffdcbd",
+                      "on-background": "#1a1c1a",
+                      "error-container": "#ffdad6",
+                      "background": "#f9f9f6",
+                      "secondary": "#7d562d",
+                      "tertiary-fixed-dim": "#c5c9a7",
+                      "inverse-surface": "#2f312f",
+                      "inverse-primary": "#95d4b3",
+                      "inverse-on-surface": "#f1f1ee",
+                      "tertiary-container": "#5d6246",
+                      "primary-fixed": "#b1f0ce",
+                      "surface-container-lowest": "#ffffff",
+                      "outline-variant": "#bfc9c1",
+                      "primary-container": "#2d6a4f",
+                      "secondary-fixed-dim": "#f0bd8b",
+                      "surface-container": "#eeeeeb",
+                      "surface-dim": "#dadad7",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#45492f",
+                      "on-primary-fixed": "#002114",
+                      "on-primary-container": "#a8e7c5",
+                      "on-surface-variant": "#404943",
+                      "outline": "#707973",
+                      "surface-container-highest": "#e2e3df",
+                      "surface-container-high": "#e8e8e5",
+                      "primary": "#0f5238",
+                      "on-surface": "#1a1c1a",
+                      "surface-container-low": "#f4f4f0",
+                      "tertiary-fixed": "#e1e6c2",
+                      "on-error-container": "#93000a",
+                      "on-secondary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "surface-bright": "#f9f9f6",
+                      "tertiary": "#464a30",
+                      "on-secondary-fixed-variant": "#623f18",
+                      "error": "#ba1a1a",
+                      "on-tertiary-container": "#d9ddba",
+                      "on-secondary-container": "#7a532a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "8px",
+                      "xs": "4px",
+                      "gutter": "24px",
+                      "xl": "48px",
+                      "container-max": "1440px",
+                      "md": "16px",
+                      "unit": "4px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "status-badge": [
+                              "Work Sans"
+                      ],
+                      "label-caps": [
+                              "Work Sans"
+                      ],
+                      "h2": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "h3": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Work Sans"
+                      ],
+                      "body-md": [
+                              "Work Sans"
+                      ],
+                      "h1": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "status-badge": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "h2": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "h3": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "h1": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-white dark:bg-slate-950 text-[#2D6A4F] dark:text-[#40916C] font-['Plus_Jakarta_Sans'] text-sm h-screen w-64 fixed left-0 top-0 z-50 border-r border-slate-200 dark:border-slate-800 shadow-xl flex flex-col h-full py-6 hidden md:flex">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-bold text-lg">
+                F
+            </div>
+<div>
+<h1 class="text-lg font-black text-[#2D6A4F]">FoodBridge</h1>
+<p class="text-xs text-on-surface-variant opacity-80">Efficient Altruism</p>
+</div>
+</div>
+<div class="px-4 mb-6">
+<button class="w-full bg-primary-container text-on-primary hover:bg-[#1B4332] transition-colors py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+                New Donation
+            </button>
+</div>
+<ul class="flex-1 space-y-1">
+<li>
+<a class="bg-[#2D6A4F]/10 text-[#2D6A4F] dark:text-[#52B788] font-semibold rounded-lg mx-2 px-4 py-3 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Overview
+                </a>
+</li>
+<li>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                    Inventory
+                </a>
+</li>
+<li>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">storefront</span>
+                    Marketplace
+                </a>
+</li>
+<li>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+                    Analytics
+                </a>
+</li>
+<li>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">history</span>
+                    History
+                </a>
+</li>
+</ul>
+<div class="mt-auto border-t border-slate-200 dark:border-slate-800 pt-4">
+<ul class="space-y-1">
+<li>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+                        Help Center
+                    </a>
+</li>
+<li>
+<a class="text-slate-600 dark:text-slate-400 mx-2 px-4 py-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+                        Sign Out
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- TopAppBar (Mobile & Top Nav Context) -->
+<header class="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md text-[#2D6A4F] dark:text-[#40916C] font-['Plus_Jakarta_Sans'] text-sm font-medium sticky top-0 w-full flex justify-between items-center px-6 h-16 docked full-width top-0 z-40 border-b border-slate-200 dark:border-slate-800 shadow-sm md:hidden">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold text-[#2D6A4F] dark:text-[#40916C] tracking-tight">FoodBridge</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:text-[#2D6A4F] dark:hover:text-[#52B788] transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:text-[#2D6A4F] dark:hover:text-[#52B788] transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-slate-200" data-alt="Professional headshot of a person looking friendly and approachable, representing a donor dashboard user profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2PSydIZNLiWCGfoIy3PepJMX5jFgOKgPtOywZ7EX_ZM1P2Ju5kj-P-bceUiW6d2RD9azbAi379iNDLTrJpXZI8XqqFhHGFWMpkdQ98Q_pXWKv7yhYcDzFF_kIoBF1VB7Dl15yYPPj7tpguMzlH2fGeWR9vRy1-SC_OtkzKCfiAtrpuqvOymVLs3_9laaG74VoK9PoWBorIPTEtfJomIe3YMHFKJpzTvlQDbBNLOL3qJRr23UuNULI7kbV31wD05lyMFMhe9txVKqb"/>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-6 md:p-gutter lg:p-xl overflow-y-auto">
+<div class="max-w-container-max mx-auto space-y-lg">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-h2 text-h2 text-on-surface">Welcome back, Fresh Market!</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Here's your impact overview for today.</p>
+</div>
+<button class="bg-primary-container text-on-primary h-xl px-6 rounded-lg font-bold hover:bg-[#1B4332] transition-colors flex items-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+                        Create Donation
+                    </button>
+</div>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-gutter">
+<!-- KPI Card 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_4px_12px_rgba(45,106,79,0.04)] border border-outline-variant/30 flex flex-col justify-between">
+<div class="flex items-center gap-2 text-primary-container mb-4">
+<span class="material-symbols-outlined">volunteer_activism</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Donations</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="font-h1 text-h1 text-on-surface">1.2k</span>
+<span class="text-sm font-semibold text-primary-container bg-primary-container/10 px-2 py-1 rounded flex items-center">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> 12%
+                            </span>
+</div>
+</div>
+<!-- KPI Card 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_4px_12px_rgba(45,106,79,0.04)] border border-outline-variant/30 flex flex-col justify-between">
+<div class="flex items-center gap-2 text-secondary mb-4">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Meals Rescued</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="font-h1 text-h1 text-on-surface">4.5k</span>
+<span class="text-sm font-semibold text-primary-container bg-primary-container/10 px-2 py-1 rounded flex items-center">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> 8%
+                            </span>
+</div>
+</div>
+<!-- KPI Card 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_4px_12px_rgba(45,106,79,0.04)] border border-outline-variant/30 flex flex-col justify-between">
+<div class="flex items-center gap-2 text-tertiary mb-4">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">NGOs Helped</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="font-h1 text-h1 text-on-surface">12</span>
+<span class="text-sm font-semibold text-on-surface-variant bg-surface-variant/50 px-2 py-1 rounded flex items-center">
+<span class="material-symbols-outlined text-[16px]">horizontal_rule</span> 0%
+                            </span>
+</div>
+</div>
+<!-- KPI Card 4 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-[0_4px_12px_rgba(45,106,79,0.04)] border border-outline-variant/30 flex flex-col justify-between relative overflow-hidden">
+<div class="absolute right-0 top-0 w-32 h-32 bg-primary-container/5 rounded-bl-full -z-10"></div>
+<div class="flex items-center gap-2 text-primary-container mb-4">
+<span class="material-symbols-outlined">stars</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Impact Score</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="font-h1 text-h1 text-primary-container">98</span>
+<span class="text-sm font-semibold text-primary-container bg-primary-container/10 px-2 py-1 rounded flex items-center">
+                                Top 5%
+                            </span>
+</div>
+</div>
+</div>
+<!-- Recent Donations Section (Glassmorphism List) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_8px_24px_rgba(45,106,79,0.06)] border border-outline-variant/20 overflow-hidden">
+<div class="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/50">
+<h3 class="font-h3 text-h3 text-on-surface">Recent Donations</h3>
+<button class="text-sm font-semibold text-primary-container hover:underline">View All</button>
+</div>
+<div class="divide-y divide-outline-variant/10">
+<!-- List Item 1 -->
+<div class="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-surface-container-low/30 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">bakery_dining</span>
+</div>
+<div>
+<h4 class="font-body-lg text-body-lg font-semibold text-on-surface">Surplus Artisanal Bread</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">50 loaves • Today, 08:30 AM</p>
+</div>
+</div>
+<div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+<div class="text-right hidden md:block">
+<p class="font-body-md text-body-md text-on-surface font-medium">To: City Hope Shelter</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">2.4 miles away</p>
+</div>
+<span class="font-status-badge text-status-badge bg-[#E2E8F0] text-[#475569] px-3 py-1.5 rounded-full flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#64748B]"></span> Picked Up
+                                </span>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-surface-container-low/30 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<div>
+<h4 class="font-body-lg text-body-lg font-semibold text-on-surface">Organic Produce Mix</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">120 lbs • Yesterday, 04:15 PM</p>
+</div>
+</div>
+<div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+<div class="text-right hidden md:block">
+<p class="font-body-md text-body-md text-on-surface font-medium">To: Community Kitchen</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">In Transit</p>
+</div>
+<span class="font-status-badge text-status-badge bg-[#D1FAE5] text-[#065F46] px-3 py-1.5 rounded-full flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#10B981]"></span> Accepted
+                                </span>
+</div>
+</div>
+<!-- List Item 3 -->
+<div class="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-surface-container-low/30 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-[#FEF3C7] flex items-center justify-center text-[#92400E]">
+<span class="material-symbols-outlined">set_meal</span>
+</div>
+<div>
+<h4 class="font-body-lg text-body-lg font-semibold text-on-surface">Prepared Deli Meals</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">35 units • Yesterday, 11:00 AM</p>
+</div>
+</div>
+<div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+<div class="text-right hidden md:block">
+<p class="font-body-md text-body-md text-on-surface font-medium">Pending Assignment</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Searching...</p>
+</div>
+<span class="font-status-badge text-status-badge bg-[#FEF3C7] text-[#92400E] px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-[#FDE68A]">
+<span class="w-2 h-2 rounded-full bg-[#F59E0B] animate-pulse"></span> Matched
+                                </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg text-[#2D6A4F] dark:text-[#40916C] text-[10px] font-bold uppercase tracking-widest fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-4 pb-safe md:hidden rounded-t-2xl z-50 border-t border-[#2D6A4F]/10 shadow-[0_-4px_12px_rgba(45,106,79,0.08)]">
+<a class="flex flex-col items-center justify-center text-[#2D6A4F] dark:text-[#52B788] scale-110 hover:text-[#1B4332] animate-pulse-subtle" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 hover:text-[#1B4332]" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="mt-1">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 hover:text-[#1B4332]" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="mt-1">Logistics</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 hover:text-[#1B4332]" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="mt-1">Profile</span>
+</a>
+</nav>
+</div>
+<!-- AI Widget (Level 3 Elevation) -->
+<div class="fixed bottom-24 md:bottom-8 right-6 z-50 flex flex-col items-end gap-4">
+<!-- Expanded Message Bubble -->
+<div class="bg-surface-container-lowest/80 backdrop-blur-xl p-4 rounded-2xl rounded-br-none shadow-[0_8px_32px_rgba(45,106,79,0.12)] border border-white/50 max-w-[280px]">
+<p class="font-body-md text-body-md text-on-surface text-sm">
+                I found <span class="font-bold text-primary-container">3 NGOs</span> nearby for your surplus bakery items. Want me to draft a donation post?
+            </p>
+</div>
+<!-- FAB Button -->
+<button class="w-14 h-14 bg-primary-container text-on-primary rounded-full shadow-[0_8px_24px_rgba(45,106,79,0.25)] flex items-center justify-center hover:bg-[#1B4332] transition-transform hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</button>
+</div>
+</body></html>

@@ -1,0 +1,55 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth';
+import {
+  getJobsByDeliveryPartner,
+  updateDeliveryJobStatus,
+  updateDonationStatus,
+  getJobById,
+} from '@/lib/store';
+import { DeliveryStatus, DonationStatus } from '@/types';
+
+// Map delivery status → donation status
+const deliveryToDonationStatus: Record<DeliveryStatus, DonationStatus> = {
+  assigned: 'pickup_assigned',
+  accepted: 'pickup_assigned',
+  picked_up: 'picked_up',
+  in_transit: 'in_transit',
+  delivered: 'delivered',
+};
+
+export async function GET() {
+  const user = await getSession();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const jobs = await getJobsByDeliveryPartner(user.id);
+  return NextResponse.json({ jobs });
+}
+
+export async function PATCH(request: NextRequest) {
+  const user = await getSession();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { jobId, status } = await request.json();
+
+  if (!jobId || !status) {
+    return NextResponse.json({ error: 'jobId and status are required' }, { status: 400 });
+  }
+
+  const job = await updateDeliveryJobStatus(jobId, status as DeliveryStatus);
+  if (!job) {
+    return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+  }
+
+  // Sync donation status
+  const donationStatus = deliveryToDonationStatus[status as DeliveryStatus];
+  if (donationStatus) {
+    await updateDonationStatus(job.donationId, donationStatus);
+  }
+
+  const updatedJob = await getJobById(jobId);
+  return NextResponse.json({ job: updatedJob });
+}
