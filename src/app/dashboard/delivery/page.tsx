@@ -13,7 +13,7 @@ export default async function DeliveryPage() {
 
   const rawJobs = await getJobsByDeliveryPartner(user.id);
   
-  // Compute priority scores and reasoning
+  // Tactical Intelligence: Compute priority scores and route reasoning
   const jobs = await Promise.all(rawJobs.map(async (job) => {
     const donation = await getDonationById(job.donationId);
     const urgency = donation?.urgency || 'low';
