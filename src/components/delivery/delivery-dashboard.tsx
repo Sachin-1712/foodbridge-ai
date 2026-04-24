@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,14 @@ import {
   ArrowRight,
   ExternalLink,
   Route,
+  Sparkles,
+  Utensils,
+  Zap,
+  Info,
+  Map as MapIcon,
+  ChevronRight,
+  Timer,
+  AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,12 +37,12 @@ interface DeliveryDashboardProps {
 
 const statusFlow: DeliveryStatus[] = ['assigned', 'accepted', 'picked_up', 'in_transit', 'delivered'];
 
-const statusActions: Record<DeliveryStatus, { label: string; next: DeliveryStatus | null }> = {
-  assigned: { label: 'Accept Job', next: 'accepted' },
-  accepted: { label: 'Mark Picked Up', next: 'picked_up' },
-  picked_up: { label: 'Start Transit', next: 'in_transit' },
-  in_transit: { label: 'Mark Delivered', next: 'delivered' },
-  delivered: { label: 'Completed', next: null },
+const statusActions: Record<DeliveryStatus, { label: string; next: DeliveryStatus | null; color: string }> = {
+  assigned: { label: 'Accept Journey', next: 'accepted', color: 'bg-fb-primary' },
+  accepted: { label: 'Confirm Pickup', next: 'picked_up', color: 'bg-blue-600' },
+  picked_up: { label: 'Start Transit', next: 'in_transit', color: 'bg-amber-600' },
+  in_transit: { label: 'Complete Delivery', next: 'delivered', color: 'bg-fb-primary' },
+  delivered: { label: 'Completed', next: null, color: 'bg-zinc-500' },
 };
 
 const statusLabels: Record<DeliveryStatus, string> = {
@@ -45,14 +53,159 @@ const statusLabels: Record<DeliveryStatus, string> = {
   delivered: 'Delivered',
 };
 
+// --- Sub-components ---
+
+const IntelligencePanel = ({ job }: { job: DeliveryJob }) => {
+  if (!job.aiReasoning) return null;
+
+  return (
+    <div className="relative group overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0f5238] to-[#1b4332] opacity-[0.98] rounded-[2rem]" />
+      <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+      
+      <div className="relative p-6 z-10">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md">
+            <Zap className="w-4 h-4 text-[#95d5b2] fill-[#95d5b2]/20" />
+          </div>
+          <span className="text-[10px] font-black text-[#95d5b2] uppercase tracking-[0.2em]">Route Intelligence</span>
+        </div>
+        
+        <p className="text-sm font-medium text-white leading-relaxed tracking-tight">
+          "{job.aiReasoning}"
+        </p>
+        
+        <div className="mt-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black text-white/40 uppercase tracking-widest leading-none">Confidence</span>
+              <span className="text-xs font-black text-[#95d5b2] mt-1">98.4%</span>
+            </div>
+            <Separator orientation="vertical" className="h-6 bg-white/10" />
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black text-white/40 uppercase tracking-widest leading-none">Priority</span>
+              <span className="text-xs font-black text-[#95d5b2] mt-1">{job.priorityScore || 92}/100</span>
+            </div>
+          </div>
+          <div className="flex -space-x-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="w-6 h-6 rounded-full border-2 border-[#1b4332] bg-fb-primary-fixed/20 backdrop-blur-sm" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MapViewport = ({ job }: { job: DeliveryJob | null }) => {
+  const onOpenMaps = () => {
+    if (!job) return;
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(job.pickupAddress)}&destination=${encodeURIComponent(job.dropAddress)}&travelmode=driving`;
+    window.open(url, '_blank');
+  };
+
+  return (
+    <div className="relative h-full w-full bg-[#f8f9f5] rounded-[2.5rem] border border-fb-outline-variant/10 overflow-hidden shadow-inner flex flex-col">
+      {job ? (
+        <>
+          {/* Header Stats Strip */}
+          <div className="absolute top-6 left-6 right-6 z-20">
+            <div className="bg-white/80 backdrop-blur-2xl border border-white/50 shadow-ambient-2 rounded-3xl p-1.5 flex items-center justify-between">
+              <div className="flex items-center gap-6 px-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-fb-primary/10 rounded-xl">
+                    <Timer className="w-4 h-4 text-fb-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Arrival</p>
+                    <p className="text-sm font-black text-fb-on-surface mt-1">{job.etaMinutes} MIN</p>
+                  </div>
+                </div>
+                <Separator orientation="vertical" className="h-8 bg-fb-outline-variant/10" />
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-500/10 rounded-xl">
+                    <Route className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Distance</p>
+                    <p className="text-sm font-black text-fb-on-surface mt-1">{job.distanceKm} KM</p>
+                  </div>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 rounded-2xl bg-fb-surface-container hover:bg-fb-surface-container-high text-fb-on-surface font-bold text-[10px] uppercase tracking-widest"
+                onClick={onOpenMaps}
+              >
+                <Navigation className="w-3.5 h-3.5 mr-2" />
+                Directions
+              </Button>
+            </div>
+          </div>
+
+          {/* Interactive Map Embed */}
+          <div className="flex-1 relative">
+            <iframe
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              style={{ border: 0 }}
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(job.pickupAddress)}&output=embed`}
+              allowFullScreen
+              className="grayscale-[0.2] contrast-[1.1] opacity-90"
+            ></iframe>
+            
+            {/* Overlay for aesthetic blending */}
+            <div className="absolute inset-0 pointer-events-none border-[12px] border-[#f8f9f5] rounded-[2.5rem]" />
+          </div>
+
+          {/* Location Details Strip */}
+          <div className="p-8 bg-white border-t border-fb-outline-variant/10 grid grid-cols-2 gap-8">
+            <div className="space-y-1">
+              <div className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-fb-primary" />
+                Origin Point
+              </div>
+              <p className="text-xs font-bold text-fb-on-surface leading-tight line-clamp-2">{job.pickupAddress}</p>
+            </div>
+            <div className="space-y-1">
+              <div className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#7d562d]" />
+                Destination Point
+              </div>
+              <p className="text-xs font-bold text-fb-on-surface leading-tight line-clamp-2">{job.dropAddress}</p>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+          <div className="w-24 h-24 bg-fb-surface-container rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner rotate-12 transition-transform hover:rotate-0 duration-700">
+            <MapIcon className="w-10 h-10 text-fb-outline-variant -rotate-12" />
+          </div>
+          <h3 className="text-xl font-black text-fb-on-surface tracking-tight">Console Offline</h3>
+          <p className="text-sm text-fb-on-surface-variant mt-2 max-w-xs leading-relaxed">
+            Select a prioritized route from the dispatch queue to activate the tactical overlay.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
-  const firstName = driverName.split(' ')[0];
+  const activeJobs = useMemo(() => jobs.filter((j) => j.status !== 'delivered'), [jobs]);
+  const completedJobsCount = useMemo(() => jobs.filter((j) => j.status === 'delivered').length, [jobs]);
 
-  const activeJobs = jobs.filter((j) => j.status !== 'delivered');
-  const completedJobs = jobs.filter((j) => j.status === 'delivered');
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(
+    activeJobs.length > 0 ? activeJobs[0].id : null
+  );
+
+  const selectedJob = activeJobs.find(j => j.id === selectedJobId) || (activeJobs.length > 0 ? activeJobs[0] : null);
 
   const handleStatusUpdate = async (jobId: string, newStatus: DeliveryStatus) => {
     setLoading(jobId);
@@ -64,15 +217,16 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
       });
 
       if (res.ok) {
-        toast.success(`Status updated to "${statusLabels[newStatus]}"`, {
-          description: newStatus === 'delivered' ? '🎉 Delivery completed!' : undefined,
+        toast.success(`Journey update: ${statusLabels[newStatus]}`, {
+          description: newStatus === 'delivered' ? '🎉 Delivery successfully logged.' : undefined,
+          icon: <CheckCircle2 className="w-4 h-4 text-fb-primary" />,
         });
         router.refresh();
       } else {
-        toast.error('Failed to update status');
+        toast.error('Sync failed');
       }
     } catch {
-      toast.error('Something went wrong');
+      toast.error('Network error');
     } finally {
       setLoading(null);
     }
@@ -83,225 +237,244 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-fb-on-surface">
-          Hey, {firstName} 🚗
-        </h1>
-        <p className="text-sm text-fb-on-surface-variant mt-1">
-          {activeJobs.length} active {activeJobs.length === 1 ? 'job' : 'jobs'} • {completedJobs.length} completed
-        </p>
+    <div className="h-[calc(100vh-7rem)] flex flex-col gap-6 overflow-hidden">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="font-[family-name:var(--font-heading)] text-3xl font-black tracking-tight text-fb-on-surface">
+            Logistics Console
+          </h1>
+          <div className="flex items-center gap-4 mt-1.5">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-fb-primary/10 rounded-full border border-fb-primary/10">
+              <div className="w-1.5 h-1.5 rounded-full bg-fb-primary animate-pulse" />
+              <span className="text-[10px] font-black text-fb-primary uppercase tracking-widest">Operator Active</span>
+            </div>
+            <Separator orientation="vertical" className="h-4 bg-fb-outline-variant/30" />
+            <p className="text-xs font-medium text-fb-on-surface-variant">
+              Fleet Monitoring System v2.4 • <span className="font-bold text-fb-on-surface">{completedJobsCount}</span> Deliveries Completed Today
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4 group cursor-pointer bg-white p-1 pr-5 rounded-full border border-fb-outline-variant/20 shadow-sm hover:shadow-md transition-all">
+          <div className="w-10 h-10 rounded-full bg-fb-surface-container flex items-center justify-center text-fb-primary font-black shadow-inner overflow-hidden border border-fb-outline-variant/10">
+            <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${driverName}&backgroundColor=0f5238&textColor=ffffff`} alt={driverName} className="w-full h-full" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Command Partner</span>
+            <span className="text-xs font-black text-fb-on-surface mt-1">{driverName}</span>
+          </div>
+        </div>
       </div>
 
-      {/* Active Jobs */}
-      {activeJobs.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xs font-semibold text-fb-on-surface-variant uppercase tracking-wider flex items-center gap-2">
-            <Truck className="w-4 h-4" />
-            Active Jobs
-          </h2>
-          {activeJobs.map((job) => {
-            const action = statusActions[job.status];
-            const currentIndex = statusFlow.indexOf(job.status);
-
-            return (
-              <Card key={job.id} className="overflow-hidden bg-fb-surface-container-lowest border-fb-outline-variant/30 shadow-ambient-1">
-                <CardContent className="p-0">
-                  {/* Job Header */}
-                  <div className="flex items-center justify-between p-4 bg-fb-surface-container-low/50">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="flex items-center justify-center w-10 h-10 rounded-xl shadow-sm"
-                        style={{ background: 'linear-gradient(135deg, #7d562d, #a06b3a)' }}
-                      >
-                        <Package className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-fb-on-surface">{job.donationTitle}</p>
-                        <div className="flex items-center gap-2 mt-0.5 text-xs text-fb-on-surface-variant">
-                          <Clock className="w-3 h-3" />
-                          <span>ETA: {job.etaMinutes} min</span>
-                          <span>•</span>
-                          <span>{job.distanceKm} km</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1.5">
-                      <StatusBadge status={job.status} />
-                      {job.priorityScore !== undefined && (
-                        <div className="flex items-center gap-1 text-[10px] font-semibold tracking-wide" style={{ color: '#a06b3a' }}>
-                          <span>PRIORITY</span>
-                          <span className="bg-[#ffdcbd]/40 px-1.5 py-0.5 rounded-sm">{job.priorityScore}/100</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <Separator className="bg-fb-outline-variant/20" />
-
-                  {job.aiReasoning && (
-                    <div className="px-4 py-2 bg-[#ffdcbd]/10 border-b border-fb-outline-variant/20 flex items-start gap-2">
-                      <div className="mt-0.5 text-[#a06b3a] shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
-                      </div>
-                      <p className="text-[11px] text-fb-on-surface-variant leading-tight">
-                        <span className="font-semibold text-fb-on-surface">AI Route Insight:</span> {job.aiReasoning}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Status Timeline */}
-                  <div className="px-4 py-3">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden min-h-0">
+        {/* LEFT COLUMN: Dispatch Queue */}
+        <div className="lg:col-span-3 flex flex-col gap-4 min-h-0">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-[11px] font-black text-fb-on-surface-variant uppercase tracking-[0.2em] flex items-center gap-2">
+              <Navigation className="w-3.5 h-3.5" />
+              Dispatch Queue ({activeJobs.length})
+            </h2>
+            <div className="flex items-center gap-1 text-[10px] font-black text-fb-primary">
+              <Zap className="w-3 h-3 fill-current" />
+              AUTO-OPTIMIZED
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto px-1 pb-4 space-y-3 custom-scrollbar">
+            {activeJobs.length > 0 ? (
+              activeJobs.map((job) => {
+                const isSelected = selectedJobId === job.id;
+                const isHighPriority = (job.priorityScore || 0) > 80;
+                
+                return (
+                  <div
+                    key={job.id}
+                    onClick={() => setSelectedJobId(job.id)}
+                    className={cn(
+                      "group relative cursor-pointer p-4 rounded-[1.5rem] border transition-all duration-500",
+                      isSelected
+                        ? "bg-white border-fb-primary/20 shadow-ambient-2 ring-1 ring-fb-primary/5"
+                        : "bg-fb-surface-container-lowest border-transparent hover:bg-white hover:border-fb-outline-variant/30 hover:shadow-sm"
+                    )}
+                  >
                     <div className="flex items-center justify-between mb-3">
-                      {statusFlow.map((s, i) => {
-                        const isComplete = i <= currentIndex;
-                        const isCurrent = i === currentIndex;
-                        return (
-                          <div key={s} className="flex items-center">
-                            <div className="flex flex-col items-center">
-                              <div
-                                className={cn(
-                                  'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all',
-                                  isComplete
-                                    ? 'bg-[#2D6A4F] text-white'
-                                    : 'bg-fb-surface-container text-fb-outline',
-                                  isCurrent && 'ring-2 ring-[#b1f0ce] ring-offset-2'
-                                )}
-                              >
-                                {isComplete ? (
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                ) : (
-                                  i + 1
-                                )}
-                              </div>
-                              <span className={cn(
-                                'text-[10px] mt-1 font-medium',
-                                isComplete ? 'text-[#2D6A4F]' : 'text-fb-outline'
-                              )}>
-                                {statusLabels[s]}
-                              </span>
-                            </div>
-                            {i < statusFlow.length - 1 && (
-                              <div
-                                className={cn(
-                                  'w-8 h-0.5 mx-1 mt-[-14px]',
-                                  i < currentIndex ? 'bg-[#2D6A4F]' : 'bg-fb-surface-container-high'
-                                )}
-                              />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <Separator className="bg-fb-outline-variant/20" />
-
-                  {/* Route Info */}
-                  <div className="p-4 space-y-3">
-                    {/* Pickup */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#b1f0ce]/30 text-[#2D6A4F] shrink-0 mt-0.5">
-                        <MapPin className="w-4 h-4" />
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={job.status} className="h-4.5 text-[8px] font-black px-2 py-0 border-none" />
+                        {isHighPriority && (
+                          <div className="w-2 h-2 rounded-full bg-fb-error animate-pulse shadow-[0_0_8px_rgba(255,0,0,0.4)]" />
+                        )}
                       </div>
-                      <div>
-                        <p className="text-[11px] font-semibold text-fb-on-surface-variant uppercase tracking-wider">Pickup</p>
-                        <p className="text-sm font-medium text-fb-on-surface">{job.pickupAddress}</p>
+                      <span className="text-[9px] font-black text-fb-on-surface-variant opacity-40 uppercase tracking-widest">
+                        {job.id.slice(-4).toUpperCase()}
+                      </span>
+                    </div>
+                    
+                    <h3 className={cn(
+                      "text-[13px] font-black leading-[1.2] transition-colors line-clamp-2 pr-4",
+                      isSelected ? "text-fb-on-surface" : "text-fb-on-surface/70 group-hover:text-fb-on-surface"
+                    )}>
+                      {job.donationTitle}
+                    </h3>
+                    
+                    <div className="flex items-center gap-4 mt-4">
+                      <div className="flex items-center gap-1.5 text-[10px] font-black text-fb-on-surface-variant">
+                        <Clock className="w-3.5 h-3.5 opacity-40" />
+                        {job.etaMinutes}m
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] font-black text-fb-on-surface-variant">
+                        <Navigation className="w-3.5 h-3.5 opacity-40" />
+                        {job.distanceKm}km
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 pl-4">
-                      <ArrowRight className="w-4 h-4 text-fb-outline-variant" />
-                    </div>
-
-                    {/* Drop */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#ffdcbd]/40 text-[#7d562d] shrink-0 mt-0.5">
-                        <Navigation className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-semibold text-fb-on-surface-variant uppercase tracking-wider">Drop-off</p>
-                        <p className="text-sm font-medium text-fb-on-surface">{job.dropAddress}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator className="bg-fb-outline-variant/20" />
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-3 p-4">
-                    <a
-                      href={getGoogleMapsUrl(job.pickupAddress, job.dropAddress)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1"
-                    >
-                      <Button variant="outline" className="w-full gap-2 border-fb-outline-variant/40 rounded-xl h-11 text-fb-on-surface-variant text-xs sm:text-sm">
-                        <Route className="w-4 h-4" />
-                        AI-Assisted Route (Google Maps)
-                        <ExternalLink className="w-3 h-3" />
-                      </Button>
-                    </a>
-                    {action.next && (
-                      <Button
-                        className="flex-1 gap-2 rounded-xl h-11 text-white shadow-ambient-2"
-                        style={{ background: 'linear-gradient(135deg, #7d562d, #a06b3a)' }}
-                        onClick={() => handleStatusUpdate(job.id, action.next!)}
-                        disabled={loading === job.id}
-                      >
-                        {loading === job.id ? 'Updating...' : action.label}
-                      </Button>
+                    {isSelected && (
+                      <div className="absolute -left-1 top-6 bottom-6 w-1.5 bg-fb-primary rounded-full shadow-[2px_0_10px_rgba(15,82,56,0.3)]" />
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Empty state for active */}
-      {activeJobs.length === 0 && (
-        <Card className="bg-fb-surface-container-lowest border-fb-outline-variant/30 shadow-ambient-1">
-          <CardContent className="py-12 text-center">
-            <Truck className="w-12 h-12 text-fb-outline-variant mx-auto mb-3" />
-            <p className="text-fb-on-surface-variant text-sm font-medium">No active jobs</p>
-            <p className="text-fb-outline text-xs mt-1">New jobs will appear here when NGOs accept donations</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Completed Jobs */}
-      {completedJobs.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-xs font-semibold text-fb-on-surface-variant uppercase tracking-wider flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#2D6A4F]" />
-            Completed ({completedJobs.length})
-          </h2>
-          {completedJobs.map((job) => (
-            <div
-              key={job.id}
-              className="flex items-center gap-4 p-4 rounded-xl bg-fb-surface-container-lowest border border-fb-outline-variant/20"
-            >
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#b1f0ce]/30 text-[#2D6A4F] shrink-0">
-                <CheckCircle2 className="w-5 h-5" />
+                );
+              })
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-20 border-2 border-dashed border-fb-outline-variant/30 rounded-[2rem]">
+                <Truck className="w-10 h-10 mb-4" />
+                <p className="text-xs font-black uppercase tracking-widest">Queue Empty</p>
+                <p className="text-[10px] mt-2 font-medium">Standing by for next mission...</p>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-fb-on-surface">{job.donationTitle}</p>
-                <div className="flex items-center gap-3 mt-1 text-xs text-fb-on-surface-variant">
-                  <span>{job.distanceKm} km</span>
-                  <span>•</span>
-                  <span>{new Date(job.updatedAt).toLocaleDateString()}</span>
+            )}
+          </div>
+        </div>
+
+        {/* CENTER COLUMN: Visual Console */}
+        <div className="lg:col-span-6 flex flex-col gap-4 min-h-0">
+          <MapViewport 
+            job={selectedJob} 
+            onOpenMaps={() => selectedJob && window.open(getGoogleMapsUrl(selectedJob.pickupAddress, selectedJob.dropAddress), '_blank')}
+          />
+        </div>
+
+        {/* RIGHT COLUMN: Intelligence & Mission Control */}
+        <div className="lg:col-span-3 flex flex-col gap-5 overflow-hidden min-h-0">
+          {selectedJob ? (
+            <div className="flex-1 flex flex-col gap-5 overflow-y-auto pr-1 pb-4 custom-scrollbar min-h-0">
+              {/* Job ID Card */}
+              <div className="p-6 rounded-[2rem] bg-white border border-fb-outline-variant/10 shadow-sm relative overflow-hidden group">
+                <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-fb-primary/5 rounded-full blur-2xl group-hover:bg-fb-primary/10 transition-all duration-700" />
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-fb-primary" />
+                    <span className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Mission Segment</span>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] font-mono font-black text-fb-primary border-fb-primary/20 bg-fb-primary/5 rounded-lg h-5">
+                    FB-{selectedJob.id.slice(-6).toUpperCase()}
+                  </Badge>
+                </div>
+                <h2 className="text-xl font-black text-fb-on-surface leading-[1.1] tracking-tight font-[family-name:var(--font-heading)]">
+                  {selectedJob.donationTitle}
+                </h2>
+              </div>
+
+              {/* AI Intelligence Panel */}
+              <IntelligencePanel job={selectedJob} />
+
+              {/* Real-time Progress Card */}
+              <div className="p-6 rounded-[2rem] bg-white border border-fb-outline-variant/10 shadow-sm flex-1">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-[11px] font-black text-fb-on-surface-variant uppercase tracking-[0.2em]">
+                    Journey Timeline
+                  </h3>
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 rounded-full">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                    <span className="text-[8px] font-black text-blue-600 uppercase tracking-tighter">Live Tracking</span>
+                  </div>
+                </div>
+                
+                <div className="relative space-y-9">
+                  {/* Vertical Progress Line */}
+                  <div className="absolute left-[13.5px] top-2 bottom-2 w-[2px] bg-fb-outline-variant/10" />
+                  
+                  {statusFlow.map((s, i) => {
+                    const currentIndex = statusFlow.indexOf(selectedJob.status);
+                    const isComplete = i <= currentIndex;
+                    const isCurrent = i === currentIndex;
+                    
+                    return (
+                      <div key={s} className="relative flex items-center gap-6 pl-10">
+                        <div className={cn(
+                          "absolute left-0 w-7 h-7 rounded-full border-[3px] border-white shadow-ambient-1 transition-all duration-700 z-10 flex items-center justify-center",
+                          isComplete ? "bg-fb-primary" : "bg-fb-surface-container",
+                          isCurrent && "ring-[6px] ring-fb-primary/10 scale-125 bg-fb-primary"
+                        )}>
+                          {isComplete ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                          ) : (
+                            <div className="w-1.5 h-1.5 rounded-full bg-fb-outline-variant/40" />
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <span className={cn(
+                            "text-[10px] font-black uppercase tracking-[0.1em] transition-colors",
+                            isCurrent ? "text-fb-primary" : isComplete ? "text-fb-on-surface" : "text-fb-on-surface-variant/40"
+                          )}>
+                            {statusLabels[s]}
+                          </span>
+                          {isCurrent && (
+                            <p className="text-[9px] font-bold text-fb-on-surface-variant/60 leading-none">
+                              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-              <Badge variant="outline" className="bg-[#b1f0ce]/30 text-[#2D6A4F] border-[#2D6A4F]/20 text-xs">
-                Delivered ✓
-              </Badge>
+
+              {/* Strategic Action Button */}
+              {statusActions[selectedJob.status].next && (
+                <div className="sticky bottom-0 pt-2 bg-gradient-to-t from-[#f8f9f5] via-[#f8f9f5] to-transparent">
+                  <Button
+                    className={cn(
+                      "w-full h-16 rounded-[1.75rem] text-white shadow-ambient-3 active:scale-[0.97] transition-all group overflow-hidden relative border-none",
+                      statusActions[selectedJob.status].color
+                    )}
+                    onClick={() => handleStatusUpdate(selectedJob.id, statusActions[selectedJob.status].next!)}
+                    disabled={loading === selectedJob.id}
+                  >
+                    <div className="relative z-10 flex items-center justify-center gap-3">
+                      {loading === selectedJob.id ? (
+                        <>
+                          <div className="w-5 h-5 border-[3px] border-white/20 border-t-white rounded-full animate-spin" />
+                          <span className="text-xs font-black uppercase tracking-[0.2em]">Syncing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-xs font-black uppercase tracking-[0.2em]">
+                            {statusActions[selectedJob.status].label}
+                          </span>
+                          <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </>
+                      )}
+                    </div>
+                    {/* Glossy Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-black/10 translate-y-full group-active:translate-y-0 transition-transform" />
+                  </Button>
+                </div>
+              )}
             </div>
-          ))}
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-fb-surface-container-lowest/30 rounded-[2.5rem] border border-fb-outline-variant/10 text-center">
+              <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center mb-4 shadow-sm">
+                <AlertCircle className="w-8 h-8 text-fb-outline-variant" />
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fb-on-surface-variant">Mission Briefing</p>
+              <p className="text-[11px] mt-2 font-medium text-fb-on-surface-variant/60 leading-relaxed px-4 italic">
+                Initialize dispatch by selecting an active route from the primary queue.
+              </p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

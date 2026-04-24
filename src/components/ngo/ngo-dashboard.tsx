@@ -16,9 +16,9 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { StatusBadge, UrgencyBadge } from '@/components/shared/status-badge';
 import { Donation } from '@/types';
@@ -33,10 +33,16 @@ import {
   Sparkles,
   Building2,
   Timer,
-  LeafyGreen,
+  Leaf,
   ArrowUpRight,
   Filter,
+  Zap,
+  ChevronRight,
+  Search,
+  Loader2,
 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 interface EnrichedDonation extends Donation {
   matchScore?: number;
@@ -66,6 +72,30 @@ const categoryLabels: Record<string, string> = {
   other: 'Other',
 };
 
+const KPICard = ({ label, value, subtitle, icon: Icon, color = "text-fb-primary" }: { label: string, value: string, subtitle: string, icon: any, color?: string }) => (
+  <Card className="bg-white border-fb-outline-variant/10 shadow-sm rounded-[2rem] overflow-hidden group hover:shadow-md transition-all duration-500">
+    <CardContent className="p-6 relative">
+      <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:scale-110 transition-transform">
+        <Icon className="w-16 h-16" />
+      </div>
+      <div className="flex items-center gap-4 mb-4">
+        <div className={cn("p-3 rounded-2xl bg-fb-surface-container", color)}>
+          <Icon className="w-5 h-5" />
+        </div>
+        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-fb-primary/5 rounded-full border border-fb-primary/5">
+          <div className="w-1 h-1 rounded-full bg-fb-primary" />
+          <span className="text-[8px] font-black text-fb-primary uppercase tracking-widest">Live Flow</span>
+        </div>
+      </div>
+      <div>
+        <p className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">{label}</p>
+        <h4 className="text-2xl font-black text-fb-on-surface mt-2 tracking-tight">{value}</h4>
+        <p className="text-[10px] font-bold text-fb-on-surface-variant/40 mt-1 uppercase">{subtitle}</p>
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName }: NGODashboardProps) {
   const router = useRouter();
   const [selectedDonation, setSelectedDonation] = useState<EnrichedDonation | null>(null);
@@ -79,6 +109,9 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
     return true;
   }).sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
 
+  const inProgressDonations = acceptedDonations.filter(d => ['accepted', 'picked_up', 'in_transit'].includes(d.status));
+  const completedDonations = acceptedDonations.filter(d => d.status === 'delivered');
+
   const handleAccept = async (donationId: string) => {
     setLoading(donationId);
     try {
@@ -89,270 +122,291 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
       });
 
       if (res.ok) {
-        toast.success('Donation accepted!', {
-          description: 'A delivery job has been created automatically.',
+        toast.success('Inventory Secured!', {
+          description: 'Logistics fleet has been dispatched to coordinates.',
+          icon: <CheckCircle2 className="w-4 h-4 text-fb-primary" />,
         });
         setSelectedDonation(null);
         router.refresh();
       } else {
-        toast.error('Failed to accept donation');
+        toast.error('Sync failed');
       }
     } catch {
-      toast.error('Something went wrong');
+      toast.error('Network error');
     } finally {
       setLoading(null);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="font-[family-name:var(--font-heading)] text-2xl font-bold text-fb-on-surface">
-          {ngoName}
-        </h1>
-        <p className="text-sm text-fb-on-surface-variant mt-1">
-          Review available donations and manage incoming food
-        </p>
+    <div className="flex flex-col gap-8 pb-10 overflow-hidden h-full">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-1.5 h-6 bg-fb-primary rounded-full" />
+            <h2 className="text-[11px] font-black text-fb-primary uppercase tracking-[0.2em]">Inventory Hub</h2>
+          </div>
+          <h1 className="font-[family-name:var(--font-heading)] text-4xl font-black tracking-tight text-fb-on-surface">
+            NGO Marketplace
+          </h1>
+          <p className="text-sm text-fb-on-surface-variant mt-1.5 font-medium max-w-md">
+            Operational center for <span className="text-fb-on-surface font-black">{ngoName}</span>. Secure surplus streams and optimize distribution.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-4 bg-white p-1.5 pr-6 rounded-full border border-fb-outline-variant/10 shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-fb-primary/10 flex items-center justify-center text-fb-primary font-black shadow-inner">
+            {ngoName.split(' ').map(n => n[0]).join('')}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Status</span>
+            <div className="flex items-center gap-1.5 mt-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-black text-fb-on-surface uppercase">Online & Operational</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard label="This Week" value={stats.thisWeek.toString()} subtitle="donations received" icon={Package} gradientFrom="#2D6A4F" gradientTo="#0f5238" />
-        <KPICard label="Meals Rescued" value={stats.mealsRescued.toString()} subtitle="total portions" icon={Utensils} gradientFrom="#10b981" gradientTo="#059669" />
-        <KPICard label="Avg. Response" value={stats.avgAcceptanceMinutes.toString()} subtitle="minutes" icon={Timer} gradientFrom="#f59e0b" gradientTo="#d97706" />
-        <KPICard label="Top Source" value={stats.topDonorType} subtitle="donor type" icon={Building2} gradientFrom="#8b5cf6" gradientTo="#7c3aed" />
+      {/* KPI Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <KPICard label="Mission Flow" value={stats.thisWeek.toString()} subtitle="Donations Processed" icon={Package} color="text-fb-primary" />
+        <KPICard label="Rescued Yield" value={stats.mealsRescued.toLocaleString()} subtitle="Total Portions Secured" icon={Utensils} color="text-emerald-600" />
+        <KPICard label="Sync Velocity" value={`${stats.avgAcceptanceMinutes}m`} subtitle="Avg. Confirmation Time" icon={Timer} color="text-amber-600" />
+        <KPICard label="Source Node" value={stats.topDonorType} subtitle="Primary Surplus Channel" icon={Building2} color="text-fb-primary" />
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="available">
-        <TabsList className="bg-fb-surface-container">
-          <TabsTrigger value="available" className="gap-2 data-[state=active]:bg-fb-surface-container-lowest data-[state=active]:text-[#2D6A4F] data-[state=active]:shadow-sm">
-            <Package className="w-4 h-4" />
-            Available ({filteredDonations.length})
-          </TabsTrigger>
-          <TabsTrigger value="accepted" className="gap-2 data-[state=active]:bg-fb-surface-container-lowest data-[state=active]:text-[#2D6A4F] data-[state=active]:shadow-sm">
-            <CheckCircle2 className="w-4 h-4" />
-            Accepted ({acceptedDonations.length})
-          </TabsTrigger>
-        </TabsList>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-h-0 bg-fb-surface-container-lowest/30 rounded-[2.5rem] border border-fb-outline-variant/5 overflow-hidden">
+        <Tabs defaultValue="available" className="flex-1 flex flex-col">
+          <div className="px-8 pt-8 pb-6 border-b border-fb-outline-variant/5 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <TabsList className="bg-fb-surface-container-low p-1.5 rounded-2xl h-14 w-fit">
+              <TabsTrigger 
+                value="available" 
+                className="px-8 rounded-xl h-full data-[state=active]:bg-white data-[state=active]:text-fb-primary data-[state=active]:shadow-sm text-[11px] font-black uppercase tracking-widest transition-all"
+              >
+                Available <Badge className="ml-3 bg-fb-primary/10 text-fb-primary border-none font-mono text-[10px]">{filteredDonations.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="accepted" 
+                className="px-8 rounded-xl h-full data-[state=active]:bg-white data-[state=active]:text-fb-primary data-[state=active]:shadow-sm text-[11px] font-black uppercase tracking-widest transition-all"
+              >
+                In Progress <Badge className="ml-3 bg-blue-500/10 text-blue-600 border-none font-mono text-[10px]">{inProgressDonations.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="history" 
+                className="px-8 rounded-xl h-full data-[state=active]:bg-white data-[state=active]:text-fb-primary data-[state=active]:shadow-sm text-[11px] font-black uppercase tracking-widest transition-all"
+              >
+                History <Badge className="ml-3 bg-emerald-500/10 text-emerald-600 border-none font-mono text-[10px]">{completedDonations.length}</Badge>
+              </TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="available" className="space-y-4 mt-4">
-          {/* Filters */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <Filter className="w-4 h-4 text-fb-outline" />
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-44 bg-fb-surface-container-lowest border-fb-outline-variant/40 rounded-xl h-10">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="cooked_meals">Cooked Meals</SelectItem>
-                <SelectItem value="bakery">Bakery</SelectItem>
-                <SelectItem value="fresh_produce">Fresh Produce</SelectItem>
-                <SelectItem value="packaged">Packaged</SelectItem>
-                <SelectItem value="dairy">Dairy</SelectItem>
-                <SelectItem value="beverages">Beverages</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
-              <SelectTrigger className="w-40 bg-fb-surface-container-lowest border-fb-outline-variant/40 rounded-xl h-10">
-                <SelectValue placeholder="Urgency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Urgency</SelectItem>
-                <SelectItem value="high">Urgent</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-3">
+              <div className="relative group">
+                <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fb-on-surface-variant opacity-40 group-focus-within:text-fb-primary transition-colors" />
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[180px] h-12 pl-10 bg-white border-fb-outline-variant/10 rounded-2xl shadow-sm text-[11px] font-black uppercase tracking-widest">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-fb-outline-variant/10 shadow-2xl">
+                    <SelectItem value="all">All Channels</SelectItem>
+                    {Object.entries(categoryLabels).map(([val, label]) => (
+                      <SelectItem key={val} value={val}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
+                <SelectTrigger className="w-[140px] h-12 bg-white border-fb-outline-variant/10 rounded-2xl shadow-sm text-[11px] font-black uppercase tracking-widest">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-fb-outline-variant/10 shadow-2xl">
+                  <SelectItem value="all">Priority: All</SelectItem>
+                  <SelectItem value="high">Critical</SelectItem>
+                  <SelectItem value="medium">Standard</SelectItem>
+                  <SelectItem value="low">Optimized</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Donations Feed */}
-          {filteredDonations.length === 0 ? (
-            <Card className="bg-fb-surface-container-lowest border-fb-outline-variant/30">
-              <CardContent className="py-12 text-center">
-                <Package className="w-12 h-12 text-fb-outline-variant mx-auto mb-3" />
-                <p className="text-fb-on-surface-variant text-sm">No available donations match your filters</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {filteredDonations.map((donation) => (
-                <button
-                  key={donation.id}
-                  onClick={() => setSelectedDonation(donation)}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl bg-fb-surface-container-lowest border border-fb-outline-variant/20 hover:border-fb-outline-variant/40 hover:shadow-ambient-1 transition-all text-left group"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#b1f0ce]/30 text-[#2D6A4F] shrink-0">
-                    {donation.isVegetarian ? (
-                      <LeafyGreen className="w-5 h-5 text-emerald-600" />
-                    ) : (
-                      <Utensils className="w-5 h-5" />
-                    )}
+          <div className="flex-1 overflow-hidden relative">
+            <TabsContent value="available" className="h-full m-0 focus-visible:ring-0">
+              <div className="h-full overflow-y-auto px-8 py-8 custom-scrollbar">
+                {filteredDonations.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center p-12 text-center opacity-20 border-2 border-dashed border-fb-outline-variant/10 rounded-[3rem]">
+                    <Search className="w-16 h-16 mb-4" />
+                    <h3 className="text-xl font-black uppercase tracking-tight">Node Scanned: Zero Results</h3>
+                    <p className="text-sm mt-2 max-w-xs font-medium">New surplus signals will appear here once broadcasted by donors.</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-fb-on-surface">{donation.title}</p>
-                      {donation.isVegetarian && (
-                        <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">VEG</Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-fb-on-surface-variant">
-                      <span>{donation.quantity} {donation.unit}</span>
-                      <span>•</span>
-                      <span>{categoryLabels[donation.category]}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {donation.locationName}
-                      </span>
-                    </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 pb-12">
+                    {filteredDonations.map((donation) => (
+                      <DonationCard 
+                        key={donation.id} 
+                        donation={donation} 
+                        onClick={() => setSelectedDonation(donation)} 
+                      />
+                    ))}
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {donation.matchScore && (
-                      <div className="flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                        <span className="text-sm font-bold text-fb-on-surface">{donation.matchScore}</span>
-                      </div>
-                    )}
-                    <UrgencyBadge urgency={donation.urgency} />
-                    <ArrowUpRight className="w-4 h-4 text-fb-outline-variant group-hover:text-fb-on-surface-variant transition-colors" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </TabsContent>
+                )}
+              </div>
+            </TabsContent>
 
-        <TabsContent value="accepted" className="mt-4">
-          {acceptedDonations.length === 0 ? (
-            <Card className="bg-fb-surface-container-lowest border-fb-outline-variant/30">
-              <CardContent className="py-12 text-center">
-                <CheckCircle2 className="w-12 h-12 text-fb-outline-variant mx-auto mb-3" />
-                <p className="text-fb-on-surface-variant text-sm">No accepted donations yet</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {acceptedDonations.map((donation) => (
-                <div
-                  key={donation.id}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-fb-surface-container-lowest border border-fb-outline-variant/20"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
-                    <CheckCircle2 className="w-5 h-5" />
+            <TabsContent value="accepted" className="h-full m-0 focus-visible:ring-0">
+              <div className="h-full overflow-y-auto px-8 py-8 custom-scrollbar">
+                {inProgressDonations.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center p-12 text-center opacity-20 border-2 border-dashed border-fb-outline-variant/10 rounded-[3rem]">
+                    <Package className="w-16 h-16 mb-4" />
+                    <h3 className="text-xl font-black uppercase tracking-tight">Zero Active Streams</h3>
+                    <p className="text-sm mt-2 max-w-xs font-medium">Accept available marketplace signals to populate your active inventory.</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-fb-on-surface">{donation.title}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-fb-on-surface-variant">
-                      <span>{donation.quantity} {donation.unit}</span>
-                      <span>•</span>
-                      <span>{categoryLabels[donation.category]}</span>
-                    </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
+                    {inProgressDonations.map((donation) => (
+                      <DonationCard 
+                        key={donation.id} 
+                        donation={donation} 
+                        onClick={() => setSelectedDonation(donation)} 
+                      />
+                    ))}
                   </div>
-                  <StatusBadge status={donation.status} />
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                )}
+              </div>
+            </TabsContent>
 
-      {/* Donation Detail Modal */}
+            <TabsContent value="history" className="h-full m-0 focus-visible:ring-0">
+              <div className="h-full overflow-y-auto px-8 py-8 custom-scrollbar">
+                {completedDonations.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center p-12 text-center opacity-20 border-2 border-dashed border-fb-outline-variant/10 rounded-[3rem]">
+                    <CheckCircle2 className="w-16 h-16 mb-4" />
+                    <h3 className="text-xl font-black uppercase tracking-tight">No History Found</h3>
+                    <p className="text-sm mt-2 max-w-xs font-medium">Successfully completed deliveries will be archived here.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
+                    {completedDonations.map((donation) => (
+                      <DonationCard 
+                        key={donation.id} 
+                        donation={donation} 
+                        onClick={() => setSelectedDonation(donation)} 
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
+
+      {/* Detail Dialog */}
       <Dialog open={!!selectedDonation} onOpenChange={() => setSelectedDonation(null)}>
-        <DialogContent className="max-w-lg bg-fb-surface-container-lowest border-fb-outline-variant/30">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 font-[family-name:var(--font-heading)] text-fb-on-surface">
-              {selectedDonation?.title}
-              {selectedDonation?.isVegetarian && (
-                <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">VEG</Badge>
-              )}
-            </DialogTitle>
-            <DialogDescription className="text-fb-on-surface-variant">
-              Review donation details and match information
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl bg-white border-none rounded-[3rem] p-0 overflow-hidden shadow-2xl outline-none">
+          <DialogDescription className="sr-only">
+            Detailed information about this donation signal, including volume, resource type, and deployment window.
+          </DialogDescription>
           {selectedDonation && (
-            <div className="space-y-4">
-              <div className="flex gap-2 flex-wrap">
-                <UrgencyBadge urgency={selectedDonation.urgency} />
-                <StatusBadge status={selectedDonation.status} />
-              </div>
-
-              {/* Match Score */}
-              {selectedDonation.matchScore && (
-                <div className="bg-gradient-to-r from-[#b1f0ce]/20 to-[#e1e6c2]/20 rounded-xl p-4 border border-[#2D6A4F]/10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="w-4 h-4 text-[#2D6A4F]" />
-                    <span className="text-sm font-semibold text-[#2D6A4F]">Match Score: {selectedDonation.matchScore}/100</span>
+            <div className="flex flex-col">
+              <div className="p-10 bg-[#f8f9f5] border-b border-fb-outline-variant/10 relative">
+                <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
+                  <Package className="w-48 h-48" />
+                </div>
+                <div className="flex items-center justify-between mb-6 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <UrgencyBadge urgency={selectedDonation.urgency} className="h-6 px-4 text-[10px] font-black" />
+                    {selectedDonation.isVegetarian && (
+                      <Badge className="bg-fb-primary/10 text-fb-primary border-none px-4 h-6 text-[10px] font-black uppercase tracking-widest">Plant-Based</Badge>
+                    )}
                   </div>
-                  <p className="text-xs font-semibold text-[#2D6A4F] mb-1">Why this NGO?</p>
-                  <p className="text-xs text-fb-on-surface-variant leading-relaxed">
-                    {selectedDonation.matchReason}
-                  </p>
+                  <span className="text-[10px] font-mono font-black text-fb-on-surface-variant/40 uppercase tracking-widest">Stream ID: {selectedDonation.id.slice(-6).toUpperCase()}</span>
                 </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-fb-outline text-xs">Category</p>
-                  <p className="font-medium text-fb-on-surface">{categoryLabels[selectedDonation.category]}</p>
-                </div>
-                <div>
-                  <p className="text-fb-outline text-xs">Quantity</p>
-                  <p className="font-medium text-fb-on-surface">{selectedDonation.quantity} {selectedDonation.unit}</p>
-                </div>
-                <div>
-                  <p className="text-fb-outline text-xs">Food Type</p>
-                  <p className="font-medium text-fb-on-surface">{selectedDonation.foodType}</p>
-                </div>
-                <div>
-                  <p className="text-fb-outline text-xs">Pickup Window</p>
-                  <p className="font-medium text-fb-on-surface">
-                    {new Date(selectedDonation.pickupStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    {' — '}
-                    {new Date(selectedDonation.pickupEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+                
+                <DialogTitle asChild>
+                  <h2 className="text-4xl font-black text-fb-on-surface tracking-tighter font-[family-name:var(--font-heading)] leading-[1.1] relative z-10 max-w-lg">
+                    {selectedDonation.title}
+                  </h2>
+                </DialogTitle>
+                
+                <div className="mt-10 grid grid-cols-3 gap-8 relative z-10">
+                  <DetailItem label="Allocated Volume" value={`${selectedDonation.quantity} ${selectedDonation.unit}`} icon={Package} />
+                  <DetailItem label="Resource Type" value={categoryLabels[selectedDonation.category]} icon={Utensils} />
+                  <DetailItem label="Origin Point" value={selectedDonation.locationName} icon={MapPin} />
                 </div>
               </div>
 
-              <div>
-                <p className="text-fb-outline text-xs mb-1">Location</p>
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="w-4 h-4 text-fb-outline" />
-                  <span className="font-medium text-fb-on-surface">{selectedDonation.locationName}</span>
-                </div>
-              </div>
+              <div className="p-10 space-y-10">
+                {/* AI Intelligence Card */}
+                {selectedDonation.matchScore && (
+                  <div className="relative p-8 rounded-[2rem] bg-[#0f5238] overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                      <Zap className="w-24 h-24 text-white" />
+                    </div>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md">
+                            <Sparkles className="w-5 h-5 text-[#95d5b2]" />
+                          </div>
+                          <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Logistics Intelligence</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-3xl font-black text-[#95d5b2]">{selectedDonation.matchScore}</span>
+                          <span className="text-[10px] font-black text-[#95d5b2]/60 uppercase">% Match</span>
+                        </div>
+                      </div>
+                      <p className="text-base font-medium text-white/90 leading-relaxed tracking-tight italic">
+                        "{selectedDonation.matchReason}"
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-              {selectedDonation.notes && (
-                <div>
-                  <p className="text-fb-outline text-xs mb-1">Notes</p>
-                  <p className="text-sm bg-fb-surface-container-low rounded-xl p-3 text-fb-on-surface-variant">{selectedDonation.notes}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="space-y-3">
+                    <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40">Deployment Window</span>
+                    <div className="flex items-center gap-3 text-sm font-black text-fb-on-surface bg-fb-surface-container-low p-4 rounded-2xl border border-fb-outline-variant/5">
+                      <Timer className="w-5 h-5 text-fb-primary" />
+                      {new Date(selectedDonation.pickupStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <ChevronRight className="w-4 h-4 opacity-20" />
+                      {new Date(selectedDonation.pickupEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                  {selectedDonation.notes && (
+                    <div className="space-y-3">
+                      <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40">Tactical Notes</span>
+                      <p className="text-xs font-medium text-fb-on-surface-variant bg-fb-surface-container-low p-4 rounded-2xl border border-fb-outline-variant/5 italic leading-relaxed">
+                        {selectedDonation.notes}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
 
-              {/* Actions */}
-              <div className="flex gap-3 pt-2">
-                <Button
-                  variant="outline"
-                  className="flex-1 gap-2 text-fb-on-surface-variant border-fb-outline-variant/40 rounded-xl h-11"
-                  onClick={() => {
-                    setSelectedDonation(null);
-                    toast.info('Donation passed');
-                  }}
-                >
-                  <XCircle className="w-4 h-4" />
-                  Pass
-                </Button>
-                <Button
-                  className="flex-1 gap-2 bg-[#2D6A4F] hover:bg-[#245a43] text-white rounded-xl h-11 shadow-ambient-2"
-                  onClick={() => handleAccept(selectedDonation.id)}
-                  disabled={loading === selectedDonation.id}
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  {loading === selectedDonation.id ? 'Accepting...' : 'Accept Donation'}
-                </Button>
+                <div className="flex gap-4 pt-6">
+                  <Button
+                    variant="outline"
+                    className="h-16 flex-1 rounded-[1.5rem] border-fb-outline-variant/20 text-xs font-black uppercase tracking-widest hover:bg-fb-surface-container transition-all"
+                    onClick={() => setSelectedDonation(null)}
+                  >
+                    Decline Signal
+                  </Button>
+                  <Button
+                    className="h-16 flex-1 rounded-[1.5rem] bg-[#0f5238] text-white hover:bg-[#1b4332] shadow-ambient-3 active:scale-[0.98] transition-all text-xs font-black uppercase tracking-widest gap-3"
+                    onClick={() => handleAccept(selectedDonation.id)}
+                    disabled={loading === selectedDonation.id}
+                  >
+                    {loading === selectedDonation.id ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        Secure & Deploy Fleet
+                        <ArrowUpRight className="w-5 h-5" />
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -362,39 +416,79 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
   );
 }
 
-/* ===== KPI Card ===== */
-function KPICard({
-  label,
-  value,
-  subtitle,
-  icon: Icon,
-  gradientFrom,
-  gradientTo,
-}: {
-  label: string;
-  value: string;
-  subtitle: string;
-  icon: React.ComponentType<{ className?: string }>;
-  gradientFrom: string;
-  gradientTo: string;
-}) {
+function DonationCard({ donation, onClick }: { donation: EnrichedDonation; onClick: () => void }) {
+  const isCompleted = donation.status === 'delivered';
+  
   return (
-    <Card className="bg-fb-surface-container-lowest border-fb-outline-variant/30 shadow-ambient-1">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-fb-on-surface-variant">{label}</p>
-            <p className="font-[family-name:var(--font-heading)] text-3xl font-bold text-fb-on-surface mt-1.5">{value}</p>
-            <p className="text-xs text-fb-outline mt-1">{subtitle}</p>
+    <Card 
+      onClick={onClick}
+      className={cn(
+        "group cursor-pointer bg-white border border-fb-outline-variant/10 rounded-[2rem] shadow-sm hover:shadow-md hover:translate-y-[-4px] transition-all duration-500 relative overflow-hidden flex flex-col h-full",
+        isCompleted ? "opacity-60 grayscale-[0.6] hover:grayscale-0 hover:opacity-100" : "hover:border-fb-primary/20"
+      )}
+    >
+      <CardContent className="p-6 flex-1 flex flex-col">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <UrgencyBadge urgency={donation.urgency} className="h-5 px-3 text-[9px] font-black" />
+            {donation.status !== 'open' && donation.status !== 'matched' && (
+              <StatusBadge status={donation.status} className="h-5 px-3 text-[9px] font-black border-none" />
+            )}
           </div>
-          <div
-            className="flex items-center justify-center w-11 h-11 rounded-xl shadow-sm shrink-0"
-            style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
-          >
-            <Icon className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2 px-2.5 py-1 bg-fb-primary/5 rounded-full border border-fb-primary/10">
+            <Sparkles className="w-3.5 h-3.5 text-fb-primary animate-pulse" />
+            <span className="text-[10px] font-black text-fb-primary">{donation.matchScore || 85}%</span>
           </div>
+        </div>
+
+        <h3 className={cn(
+          "text-xl font-black text-fb-on-surface tracking-tight leading-[1.15] mb-6 line-clamp-2 transition-colors",
+          isCompleted ? "text-fb-on-surface-variant" : "group-hover:text-fb-primary"
+        )}>
+          {donation.title}
+        </h3>
+
+        <div className="grid grid-cols-2 gap-x-4 gap-y-4 mb-6">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-fb-surface-container group-hover:bg-fb-primary/5 transition-colors">
+              <Package className="w-3.5 h-3.5 text-fb-on-surface-variant opacity-60" />
+            </div>
+            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest">{donation.quantity} {donation.unit}</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-fb-surface-container group-hover:bg-fb-primary/5 transition-colors">
+              <Clock className="w-3.5 h-3.5 text-fb-on-surface-variant opacity-60" />
+            </div>
+            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest">T-Window</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-6 border-t border-fb-outline-variant/5 mt-auto">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className={cn(
+              "w-2 h-2 rounded-full transition-colors",
+              isCompleted ? "bg-zinc-300" : "bg-fb-primary/40 group-hover:bg-fb-primary"
+            )} />
+            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest truncate">{donation.locationName}</span>
+          </div>
+          <ArrowUpRight className={cn(
+            "w-5 h-5 transition-all",
+            isCompleted ? "text-fb-on-surface-variant opacity-20" : "text-fb-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1"
+          )} />
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function DetailItem({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-[10px] font-black text-fb-on-surface-variant uppercase tracking-[0.2em] opacity-40">
+        <Icon className="w-3.5 h-3.5" />
+        {label}
+      </div>
+      <p className="text-sm font-black text-fb-on-surface truncate leading-none">{value}</p>
+    </div>
   );
 }

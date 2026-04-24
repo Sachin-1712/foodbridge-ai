@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getJobsByDeliveryPartner, getDonationById } from '@/lib/store';
 import { DeliveryDashboard } from '@/components/delivery/delivery-dashboard';
+import { RevalidationTimer } from '@/components/shared/revalidation-timer';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,18 +16,18 @@ export default async function DeliveryPage() {
   // Compute priority scores and reasoning
   const jobs = await Promise.all(rawJobs.map(async (job) => {
     const donation = await getDonationById(job.donationId);
-    const urgency = donation?.urgencyLevel || 'low';
+    const urgency = donation?.urgency || 'low';
     
     // Heuristic AI priority score calculation
     let priorityScore = 50;
     let reasoningParts = [];
     
-    if (urgency === 'emergency') {
-      priorityScore += 40;
-      reasoningParts.push('Critical emergency priority');
-    } else if (urgency === 'high') {
+    if (urgency === 'high') {
       priorityScore += 25;
       reasoningParts.push('High urgency pickup');
+    } else if (urgency === 'medium') {
+      priorityScore += 10;
+      reasoningParts.push('Standard priority pickup');
     }
     
     if (job.distanceKm < 5) {
@@ -54,5 +55,10 @@ export default async function DeliveryPage() {
   // Sort jobs by priority score descending
   jobs.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
 
-  return <DeliveryDashboard jobs={jobs} driverName={user.name} />;
+  return (
+    <>
+      <DeliveryDashboard jobs={jobs} driverName={user.name} />
+      <RevalidationTimer intervalMs={15000} />
+    </>
+  );
 }

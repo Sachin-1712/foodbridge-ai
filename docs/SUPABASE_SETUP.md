@@ -1,27 +1,60 @@
-# Supabase Setup Guide for FoodBridge
+# FoodBridge Supabase Setup
 
-## Overview
-FoodBridge has been migrated from an in-memory data store to a persistent Supabase PostgreSQL database. This ensures that the demo state, user profiles, and donation flows persist across server restarts.
+This document outlines the Supabase schema and setup required for the FoodBridge MVP.
 
-## Schema
-The database uses a simplified relational schema optimized for the demo happy path.
+## Schema Overview
 
-### Tables
-1. **profiles**: Stores user information, including role (`donor`, `ngo`, `delivery`). Passwords are in plain text for demo simplicity.
-2. **ngo_profiles**: Stores additional metadata for NGOs such as acceptance rate and capacity.
-3. **donations**: Core entity representing a food donation, tracking its status (`open`, `accepted`, `picked_up`, `delivered`).
-4. **match_suggestions**: Stores generated NGO match recommendations for open donations based on location, capacity, and acceptance rate.
-5. **delivery_jobs**: Tracks the assignment of a delivery partner to an accepted donation.
-6. **analytics_snapshots**: Historical analytics data for NGOs.
+The following tables are used to support the Donor → NGO → Delivery workflow:
+
+### 1. `profiles`
+Stores user profile information.
+- `id`: UUID (Primary Key)
+- `email`: Text
+- `role`: Text ('donor', 'ngo', 'delivery')
+- `name`: Text
+- `organization_name`: Text (NGOs only)
+- `created_at`: Timestamp
+
+### 2. `donations`
+Stores food donation details.
+- `id`: UUID (Primary Key)
+- `donor_id`: UUID (Foreign Key to profiles)
+- `title`: Text
+- `description`: Text
+- `category`: Text
+- `quantity`: Text
+- `pickup_address`: Text
+- `urgency`: Text ('low', 'medium', 'high')
+- `status`: Text ('available', 'pickup_assigned', 'picked_up', 'in_transit', 'delivered')
+- `created_at`: Timestamp
+- `accepted_by_ngo_id`: UUID (Foreign Key to profiles)
+
+### 3. `delivery_jobs`
+Stores delivery assignments.
+- `id`: UUID (Primary Key)
+- `donation_id`: UUID (Foreign Key to donations)
+- `delivery_partner_id`: UUID (Foreign Key to profiles)
+- `status`: Text ('assigned', 'accepted', 'picked_up', 'in_transit', 'delivered')
+- `pickup_address`: Text
+- `delivery_address`: Text
+- `distance_km`: Numeric
+- `estimated_duration_mins`: Integer
+- `created_at`: Timestamp
 
 ## Environment Variables
-The application requires the following environment variables in `.env.local`:
-- `NEXT_PUBLIC_SUPABASE_URL`: The Supabase project URL.
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: The public anonymous key for Supabase access.
 
-## Architecture
-- `src/lib/supabase.ts`: Initializes the Supabase client.
-- `src/lib/store.ts`: Has been refactored to query Supabase directly using the `@supabase/supabase-js` client. The original TypeScript interfaces are preserved and mapped appropriately to database `snake_case` fields.
+Ensure the following variables are set in `.env.local`:
 
-## Seeding
-The initial demo data was migrated using `supabase-seed.js` to populate users, NGOs, and donations. `src/lib/seed.ts` is no longer needed for run-time data but serves as a reference for the original static arrays.
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+## Seeding Data
+
+A seed script is available at `scripts/supabase-seed.js`. Run it using:
+```bash
+node scripts/supabase-seed.js
+```
+This script populates the database with demo users (Donor, NGO, Delivery Partner) and sample donations to ensure a functional starting point for demonstrations.

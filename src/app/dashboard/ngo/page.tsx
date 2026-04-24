@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getNGOStats, getOpenDonations, getDonationsByNGO, getMatchesForNGO, getMatchesForDonation } from '@/lib/store';
 import { NGODashboard } from '@/components/ngo/ngo-dashboard';
+import { RevalidationTimer } from '@/components/shared/revalidation-timer';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,11 +27,14 @@ export default async function NGOPage() {
   }));
 
   return (
-    <NGODashboard
-      stats={stats}
-      openDonations={enrichedDonations}
-      acceptedDonations={acceptedDonations}
-      ngoName={user.organizationName}
-    />
+    <>
+      <NGODashboard
+        stats={stats}
+        openDonations={enrichedDonations}
+        acceptedDonations={acceptedDonations}
+        ngoName={user.organizationName}
+      />
+      <RevalidationTimer intervalMs={10000} />
+    </>
   );
 }

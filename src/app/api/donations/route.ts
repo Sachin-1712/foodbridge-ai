@@ -76,24 +76,35 @@ export async function POST(request: NextRequest) {
 
   // Create donation
   if (body.action === 'create') {
+    // Helper to convert HH:MM to ISO timestamp for today
+    const timeToISO = (timeStr: string | undefined, hoursOffset = 0) => {
+      if (!timeStr || !timeStr.includes(':')) {
+        return new Date(Date.now() + hoursOffset * 3600000).toISOString();
+      }
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      const d = new Date();
+      d.setHours(hours, minutes, 0, 0);
+      return d.toISOString();
+    };
+
     const donation: Donation = {
-      id: `don-${Date.now()}`,
+      id: crypto.randomUUID(),
       donorId: user.id,
-      title: body.title,
-      category: body.category,
-      foodType: body.foodType,
-      quantity: parseInt(body.quantity),
-      unit: body.unit,
-      urgency: body.urgency,
-      preparedAt: body.preparedAt || new Date().toISOString(),
-      expiresAt: body.expiresAt || new Date(Date.now() + 6 * 3600000).toISOString(),
-      pickupStart: body.pickupStart || new Date().toISOString(),
-      pickupEnd: body.pickupEnd || new Date(Date.now() + 3 * 3600000).toISOString(),
-      locationName: body.locationName || user.area,
-      latitude: body.latitude || 51.5117,
-      longitude: body.longitude || -0.124,
-      notes: body.notes || '',
-      isVegetarian: body.isVegetarian || false,
+      title: body.donation.title,
+      category: body.donation.category,
+      foodType: body.donation.foodType,
+      quantity: Number(body.donation.quantity),
+      unit: body.donation.unit,
+      urgency: body.donation.urgency,
+      preparedAt: timeToISO(body.donation.preparedAt),
+      expiresAt: timeToISO(body.donation.expiresAt, 6), // Default 6h if missing
+      pickupStart: timeToISO(body.donation.pickupStart),
+      pickupEnd: timeToISO(body.donation.pickupEnd, 3),   // Default 3h if missing
+      locationName: body.donation.locationName || user.area,
+      latitude: body.donation.latitude || 51.5117,
+      longitude: body.donation.longitude || -0.124,
+      notes: body.donation.notes || '',
+      isVegetarian: body.donation.isVegetarian || false,
       status: 'open',
       createdAt: new Date().toISOString(),
     };
@@ -120,11 +131,11 @@ export async function POST(request: NextRequest) {
     const ngoProfile = await getNGOProfileByUserId(user.id);
 
     const job = {
-      id: `job-${Date.now()}`,
+      id: crypto.randomUUID(),
       donationId: donation.id,
       donorId: donation.donorId,
       ngoId: user.id,
-      deliveryPartnerId: 'user-delivery-1',
+      deliveryPartnerId: '44444444-4444-4444-4444-444444444444', // Marcus Thompson (Seeded Delivery User)
       pickupAddress: donation.locationName,
       dropAddress: ngoProfile?.area || user.area,
       etaMinutes: Math.floor(Math.random() * 15) + 15,

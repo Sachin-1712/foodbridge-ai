@@ -40,40 +40,66 @@ function generateResponse(question: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const requestId = Math.random().toString(36).substring(7);
+  console.log(`[Chat API ${requestId}] Processing new request...`);
+
   try {
     const { messages } = await request.json();
-    // messages is expected to have { role: 'user' | 'assistant', parts: [{ text: string }] }
-    // Let's get the last user message text for the fallback
     const lastUserMessage = messages?.filter((m: any) => m.role === 'user').pop();
     const lastText = lastUserMessage?.parts?.[0]?.text || '';
     
     if (!lastText) {
+      console.log(`[Chat API ${requestId}] No user message found.`);
       return NextResponse.json({ reply: 'Please ask me a question about FoodBridge!' });
     }
 
     // Try Gemini if key exists
     if (process.env.GEMINI_API_KEY) {
-      console.log('Gemini API key found, attempting to call Gemini...');
+      console.log(`[Chat API ${requestId}] Gemini API key found. Attempting Gemini 2.5 Flash call...`);
       try {
-        // Map 'assistant' to 'model' for Gemini
-        const geminiMessages = messages.map((m: any) => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: m.parts || [{ text: m.content || '' }],
-        }));
+        // Map 'assistant' to 'model' for Gemini and filter out empty messages
+        let geminiMessages = messages
+          .filter((m: any) => (m.parts?.[0]?.text || m.content))
+          .map((m: any) => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: m.parts || [{ text: m.content || '' }],
+          }));
 
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        // Gemini REQUIREMENT: History must start with 'user'
+        if (geminiMessages.length > 0 && geminiMessages[0].role === 'model') {
+          console.log(`[Chat API ${requestId}] Removing initial model message to satisfy Gemini requirements.`);
+          geminiMessages.shift();
+        }
+
+        // Gemini REQUIREMENT: Must alternate between user and model
+        // If we have consecutive roles, we'll keep the last one of each type for simplicity in this demo
+        const sanitizedMessages: any[] = [];
+        for (let i = 0; i < geminiMessages.length; i++) {
+          if (i === 0 || geminiMessages[i].role !== geminiMessages[i - 1].role) {
+            sanitizedMessages.push(geminiMessages[i]);
+          } else {
+            // Replace the previous one with current one (likely more recent/relevant)
+            sanitizedMessages[sanitizedMessages.length - 1] = geminiMessages[i];
+          }
+        }
+
+        console.log(`[Chat API ${requestId}] Sending ${sanitizedMessages.length} messages to Gemini.`);
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: geminiMessages.slice(-5), // keep last 5
+            contents: sanitizedMessages.slice(-6), // keep last few exchanges
             systemInstruction: {
-              parts: [{ text: `You are the FoodBridge platform assistant. FoodBridge is a food waste redistribution platform that connects food donors (restaurants, bakeries) with NGOs through delivery partners. Be concise, helpful, and guide users to their next action. Only answer platform-related questions.` }]
+              parts: [{ text: `You are the FoodBridge platform assistant. FoodBridge connects food donors (restaurants, bakeries) with NGOs through delivery partners. 
+              DONOR FLOW: Create donation -> Match with NGO -> Delivery assigned -> Food picked up -> Delivered.
+              NGO FLOW: View marketplace -> Accept donation -> Track delivery -> Receive food.
+              DELIVERY FLOW: View assigned jobs -> Accept -> Pick up -> Mark in-transit -> Deliver.
+              Be concise, professional, and guide users. If asked about technical details, use the FAQ knowledge but keep it conversational.` }]
             },
             generationConfig: {
-              maxOutputTokens: 300,
-              temperature: 0.7,
+              maxOutputTokens: 500,
+              temperature: 0.8,
             }
           }),
         });
@@ -81,65 +107,29 @@ export async function POST(request: NextRequest) {
         if (res.ok) {
           const data = await res.json();
           const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          console.log('Gemini API success. Reply:', reply?.substring(0, 50) + '...');
           if (reply) {
+            console.log(`[Chat API ${requestId}] Gemini SUCCESS. Reply length: ${reply.length}`);
             return NextResponse.json({ reply });
           }
         } else {
-          const errorData = await res.text();
-          console.error('Gemini API responded with error status:', res.status, errorData);
+          const errorBody = await res.text();
+          console.error(`[Chat API ${requestId}] Gemini API Error (${res.status}):`, errorBody);
         }
       } catch (e) {
-        // Fall through to deterministic response
-        console.error('Gemini API Error:', e);
+        console.error(`[Chat API ${requestId}] Exception during Gemini call:`, e);
       }
     } else {
-      console.log('No GEMINI_API_KEY found in process.env, falling back to deterministic FAQ mode.');
+      console.warn(`[Chat API ${requestId}] GEMINI_API_KEY is MISSING in environment.`);
     }
 
-    // Try OpenAI if key exists (legacy fallback)
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        const openaiMessages = messages.map((m: any) => ({
-          role: m.role,
-          content: m.parts?.[0]?.text || m.content || '',
-        }));
-        
-        const res = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [
-              {
-                role: 'system',
-                content: `You are the FoodBridge platform assistant. FoodBridge is a food waste redistribution platform that connects food donors (restaurants, bakeries) with NGOs through delivery partners. Be concise, helpful, and guide users to their next action. Only answer platform-related questions.`,
-              },
-              ...openaiMessages.slice(-5),
-            ],
-            max_tokens: 300,
-            temperature: 0.7,
-          }),
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          return NextResponse.json({ reply: data.choices[0].message.content });
-        }
-      } catch {
-        // Fall through to deterministic response
-      }
-    }
-
-    // Deterministic fallback
+    // Deterministic fallback (FAQ)
+    console.log(`[Chat API ${requestId}] Falling back to deterministic FAQ mode.`);
     const reply = generateResponse(lastText);
     return NextResponse.json({ reply });
-  } catch {
+  } catch (err) {
+    console.error(`[Chat API ${requestId}] Critical Route Error:`, err);
     return NextResponse.json(
-      { reply: 'Sorry, I had trouble processing your question. Please try again.' },
+      { reply: 'Sorry, I encountered a technical glitch. Please try again or ask about "how to start".' },
       { status: 200 }
     );
   }
