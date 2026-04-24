@@ -310,7 +310,7 @@ export function NGOAnalytics({ stats, analytics, donations, ngoName }: NGOAnalyt
                         dataKey="minutes"
                         stroke="#7d562d"
                         strokeWidth={4}
-                        dot={{ r: 6, fill: '#7d562d', strokeWidth: 0, shadow: '0 4px 12px rgba(125, 86, 45, 0.2)' }}
+                        dot={{ r: 6, fill: '#7d562d', strokeWidth: 0 }}
                         activeDot={{ r: 9, strokeWidth: 0, fill: '#0f5238' }}
                       />
                     </LineChart>

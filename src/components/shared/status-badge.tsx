@@ -20,20 +20,20 @@ const urgencyConfig: Record<Urgency, { label: string; className: string; dotColo
   low: { label: 'Low', className: 'bg-fb-surface-container text-fb-on-surface-variant border-fb-outline-variant/30', dotColor: 'bg-fb-outline' },
 };
 
-export function StatusBadge({ status }: { status: DonationStatus | DeliveryStatus }) {
+export function StatusBadge({ status, className }: { status: DonationStatus | DeliveryStatus; className?: string }) {
   const config = statusConfig[status] || { label: status, className: '', dotColor: 'bg-fb-outline' };
   return (
-    <Badge variant="outline" className={cn('text-xs font-medium rounded-full px-3 py-1 gap-1.5', config.className)}>
+    <Badge variant="outline" className={cn('text-xs font-medium rounded-full px-3 py-1 gap-1.5', config.className, className)}>
       <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', config.dotColor)} />
       {config.label}
     </Badge>
   );
 }
 
-export function UrgencyBadge({ urgency }: { urgency: Urgency }) {
+export function UrgencyBadge({ urgency, className }: { urgency: Urgency; className?: string }) {
   const config = urgencyConfig[urgency];
   return (
-    <Badge variant="outline" className={cn('text-xs font-medium rounded-full px-3 py-1 gap-1.5', config.className)}>
+    <Badge variant="outline" className={cn('text-xs font-medium rounded-full px-3 py-1 gap-1.5', config.className, className)}>
       <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', config.dotColor)} />
       {config.label}
     </Badge>

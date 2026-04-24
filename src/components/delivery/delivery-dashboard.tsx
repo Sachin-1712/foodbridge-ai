@@ -348,7 +348,6 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
         <div className="lg:col-span-6 flex flex-col gap-4 min-h-0">
           <MapViewport 
             job={selectedJob} 
-            onOpenMaps={() => selectedJob && window.open(getGoogleMapsUrl(selectedJob.pickupAddress, selectedJob.dropAddress), '_blank')}
           />
         </div>
 
