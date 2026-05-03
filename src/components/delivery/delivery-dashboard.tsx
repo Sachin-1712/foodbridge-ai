@@ -428,7 +428,7 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
                           </span>
                           {isCurrent && (
                             <p className="text-[9px] font-bold text-fb-on-surface-variant/60 leading-none">
-                              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              Current step
                             </p>
                           )}
                         </div>
