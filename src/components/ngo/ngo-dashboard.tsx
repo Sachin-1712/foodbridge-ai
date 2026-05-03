@@ -109,7 +109,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
     return true;
   }).sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
 
-  const inProgressDonations = acceptedDonations.filter(d => ['accepted', 'picked_up', 'in_transit'].includes(d.status));
+  const inProgressDonations = acceptedDonations.filter(d => ['accepted', 'pickup_assigned', 'picked_up', 'in_transit'].includes(d.status));
   const completedDonations = acceptedDonations.filter(d => d.status === 'delivered');
 
   const handleAccept = async (donationId: string) => {

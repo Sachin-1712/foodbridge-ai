@@ -11,6 +11,23 @@ import {
 import { supabase } from './supabase';
 
 // Helper to map DB snake_case to TS camelCase
+const parseFoodTypes = (value: unknown): FoodCategory[] => {
+  if (Array.isArray(value)) {
+    return value as FoodCategory[];
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed as FoodCategory[] : [];
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
+};
+
 const mapUser = (row: any): User => ({
   id: row.id,
   name: row.name,
@@ -76,7 +93,7 @@ const mapNGO = (row: any): NGOProfile => ({
   id: row.id,
   userId: row.user_id,
   name: row.name,
-  supportedFoodTypes: row.supported_food_types,
+  supportedFoodTypes: parseFoodTypes(row.supported_food_types),
   maxDailyCapacity: row.max_daily_capacity,
   area: row.area,
   latitude: row.latitude,
@@ -99,6 +116,19 @@ export async function getUserById(id: string): Promise<User | undefined> {
 export async function getAllUsers(): Promise<User[]> {
   const { data } = await supabase.from('profiles').select('*');
   return (data || []).map(mapUser);
+}
+
+export async function getFirstDeliveryPartner(): Promise<User | undefined> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('role', 'delivery')
+    .order('created_at', { ascending: true });
+
+  if (!data || data.length === 0) return undefined;
+
+  const seededDeliveryUser = data.find((row: any) => row.email === 'delivery@foodbridge.demo');
+  return mapUser(seededDeliveryUser || data[0]);
 }
 
 // ─── NGO Profiles ──────────────────────────────────────────
@@ -217,8 +247,8 @@ export async function getJobById(jobId: string): Promise<DeliveryJob | undefined
   return data ? mapJob(data) : undefined;
 }
 
-export async function createDeliveryJob(job: DeliveryJob): Promise<void> {
-  await supabase.from('delivery_jobs').insert([{
+export async function createDeliveryJob(job: DeliveryJob): Promise<DeliveryJob> {
+  const { data, error } = await supabase.from('delivery_jobs').insert([{
     donation_id: job.donationId,
     donor_id: job.donorId,
     ngo_id: job.ngoId,
@@ -229,7 +259,34 @@ export async function createDeliveryJob(job: DeliveryJob): Promise<void> {
     distance_km: job.distanceKm,
     status: job.status,
     donation_title: job.donationTitle,
-  }]);
+  }]).select().single();
+  if (error) throw error;
+  return mapJob(data);
+}
+
+export async function updateDeliveryJobForDonation(
+  donationId: string,
+  updates: Pick<DeliveryJob, 'ngoId' | 'deliveryPartnerId' | 'pickupAddress' | 'dropAddress' | 'etaMinutes' | 'distanceKm' | 'status' | 'donationTitle'>
+): Promise<DeliveryJob | undefined> {
+  const { data, error } = await supabase
+    .from('delivery_jobs')
+    .update({
+      ngo_id: updates.ngoId,
+      delivery_partner_id: updates.deliveryPartnerId,
+      pickup_address: updates.pickupAddress,
+      drop_address: updates.dropAddress,
+      eta_minutes: updates.etaMinutes,
+      distance_km: updates.distanceKm,
+      status: updates.status,
+      donation_title: updates.donationTitle,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('donation_id', donationId)
+    .select()
+    .single();
+
+  if (error) return undefined;
+  return mapJob(data);
 }
 
 export async function updateDeliveryJobStatus(

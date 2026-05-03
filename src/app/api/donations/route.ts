@@ -9,14 +9,15 @@ import {
   getDonationById,
   generateMatchSuggestions,
   getMatchesForDonation,
-  getMatchesForNGO,
   getDonationsByNGO,
   createDeliveryJob,
-  getUserById,
   getNGOProfileByUserId,
   getAllNGOProfiles,
+  getFirstDeliveryPartner,
+  getJobByDonationId,
+  updateDeliveryJobForDonation,
 } from '@/lib/store';
-import { Donation } from '@/types';
+import { DeliveryJob, Donation } from '@/types';
 
 export async function GET(request: NextRequest) {
   const user = await getSession();
@@ -76,6 +77,10 @@ export async function POST(request: NextRequest) {
 
   // Create donation
   if (body.action === 'create') {
+    if (user.role !== 'donor') {
+      return NextResponse.json({ error: 'Only donors can create donations' }, { status: 403 });
+    }
+
     // Helper to convert HH:MM to ISO timestamp for today
     const timeToISO = (timeStr: string | undefined, hoursOffset = 0) => {
       if (!timeStr || !timeStr.includes(':')) {
@@ -119,23 +124,38 @@ export async function POST(request: NextRequest) {
 
   // Accept donation (NGO action)
   if (body.action === 'accept') {
+    if (user.role !== 'ngo') {
+      return NextResponse.json({ error: 'Only NGOs can accept donations' }, { status: 403 });
+    }
+
     const donation = await getDonationById(body.donationId);
     if (!donation) {
       return NextResponse.json({ error: 'Donation not found' }, { status: 404 });
     }
 
-    await updateDonationStatus(body.donationId, 'accepted', user.id);
+    if (!['open', 'matched'].includes(donation.status)) {
+      return NextResponse.json(
+        { error: 'Donation is no longer available for acceptance' },
+        { status: 409 }
+      );
+    }
 
-    // Auto-create delivery job
-    const donor = await getUserById(donation.donorId);
+    const deliveryPartner = await getFirstDeliveryPartner();
+    if (!deliveryPartner) {
+      return NextResponse.json(
+        { error: 'No delivery partner is available for assignment' },
+        { status: 500 }
+      );
+    }
+
     const ngoProfile = await getNGOProfileByUserId(user.id);
 
-    const job = {
+    const jobPayload: DeliveryJob = {
       id: crypto.randomUUID(),
       donationId: donation.id,
       donorId: donation.donorId,
       ngoId: user.id,
-      deliveryPartnerId: '44444444-4444-4444-4444-444444444444', // Marcus Thompson (Seeded Delivery User)
+      deliveryPartnerId: deliveryPartner.id,
       pickupAddress: donation.locationName,
       dropAddress: ngoProfile?.area || user.area,
       etaMinutes: Math.floor(Math.random() * 15) + 15,
@@ -146,13 +166,22 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString(),
     };
 
-    await createDeliveryJob(job);
+    const existingJob = await getJobByDonationId(donation.id);
+    const job = existingJob
+      ? await updateDeliveryJobForDonation(donation.id, jobPayload)
+      : await createDeliveryJob(jobPayload);
+
+    await updateDonationStatus(body.donationId, 'pickup_assigned', user.id);
 
     return NextResponse.json({ donation: await getDonationById(body.donationId), job });
   }
 
   // Reject donation
   if (body.action === 'reject') {
+    if (user.role !== 'ngo') {
+      return NextResponse.json({ error: 'Only NGOs can reject donations' }, { status: 403 });
+    }
+
     // Just acknowledge — in demo we don't track rejections
     return NextResponse.json({ success: true });
   }

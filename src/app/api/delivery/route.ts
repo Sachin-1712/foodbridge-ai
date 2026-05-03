@@ -23,6 +23,10 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  if (user.role !== 'delivery') {
+    return NextResponse.json({ error: 'Only delivery users can view delivery jobs' }, { status: 403 });
+  }
+
   const jobs = await getJobsByDeliveryPartner(user.id);
   return NextResponse.json({ jobs });
 }
@@ -33,10 +37,27 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  if (user.role !== 'delivery') {
+    return NextResponse.json({ error: 'Only delivery users can update delivery jobs' }, { status: 403 });
+  }
+
   const { jobId, status } = await request.json();
 
   if (!jobId || !status) {
     return NextResponse.json({ error: 'jobId and status are required' }, { status: 400 });
+  }
+
+  if (!Object.keys(deliveryToDonationStatus).includes(status)) {
+    return NextResponse.json({ error: 'Invalid delivery status' }, { status: 400 });
+  }
+
+  const existingJob = await getJobById(jobId);
+  if (!existingJob) {
+    return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+  }
+
+  if (existingJob.deliveryPartnerId !== user.id) {
+    return NextResponse.json({ error: 'This delivery job is not assigned to the current user' }, { status: 403 });
   }
 
   const job = await updateDeliveryJobStatus(jobId, status as DeliveryStatus);
