@@ -1,4 +1,4 @@
-// FoodBridge Seed Data — Realistic demo data
+// Sharebite Seed Data — Realistic demo data
 import {
   User,
   NGOProfile,

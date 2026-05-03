@@ -10,9 +10,9 @@ Status key:
 
 ## Requested Changes
 
-- [ ] 1. Simplify language
-  - Replace dense operational wording with clear demo-friendly labels.
-  - Planned examples:
+- [x] 1. Simplify language
+  - Replaced dense operational wording with clear demo-friendly labels.
+  - Completed examples:
     - "Efficient Altruism Starts Here" to "Share Extra Food Easily"
     - "Plant-Based Registry" to "Vegetarian Food"
     - "Deployment Parameters" to "Pickup Details"
@@ -58,15 +58,16 @@ Status key:
 - [~] 7. Role-specific chatbot
   - Chat panel has role-specific greeting text.
   - `/api/chat` does not receive or use role context yet.
-  - Gemini system prompt and FAQ fallback still use generic FoodBridge wording.
+  - Phase 2 updated chatbot labels, fallback text, and Gemini system prompt to use Sharebite naming.
+  - Role-specific API behavior is still planned for Phase 8.
 
-- [ ] 8. Rename website to Sharebite
-  - Visible app branding, metadata, chatbot labels, and docs still use FoodBridge.
+- [x] 8. Rename website to Sharebite
+  - Visible app branding, metadata, chatbot labels, README, and setup/deployment docs now use Sharebite.
   - Database table names should not be renamed unless necessary.
 
 - [~] 9. Role-based login/access control
   - Dashboard pages redirect users based on `profiles.role`.
-  - Login currently auto-logs in from role cards using FoodBridge demo emails.
+  - Login currently auto-logs in from role cards using legacy demo emails.
   - Phase 1 added API role checks for donor donation creation, NGO accept/reject, and delivery job updates.
   - Login still needs selected-role verification in Phase 9.
   - Planned demo accounts:
@@ -94,7 +95,7 @@ Status key:
 - [x] Phase 0 - Create `IMPLEMENTATION_AUDIT.md`.
 - [x] Phase 0 - Create `CLIENT_CHANGES_TRACKER.md`.
 - [x] Phase 1 - Stabilize cross-role donation workflow.
-- [ ] Phase 2 - Rename app to Sharebite and simplify copy.
+- [x] Phase 2 - Rename app to Sharebite and simplify copy.
 - [ ] Phase 3 - Localize demo data for Bangalore.
 - [ ] Phase 4 - Add status dropdown.
 - [ ] Phase 5 - Add donor edit and delete controls.
@@ -121,3 +122,11 @@ Status key:
 - Donation status is set to `pickup_assigned` when a delivery job is assigned, then delivery updates sync it through `picked_up`, `in_transit`, and `delivered`.
 - NGO current/in-progress view now includes `pickup_assigned`.
 - Phase 1 workflow test passed with donation `4aa4acf8-f595-4241-ab49-025eb3e6194c` and delivery job `5d7d24d1-7a09-4c1b-a99b-36e04a0f3c08`.
+
+## Current Phase 2 Notes
+
+- Renamed visible app branding to Sharebite across login, sidebar/mobile header, metadata, chatbot labels, README, deployment docs, and setup/design docs.
+- Simplified high-friction copy across donor, NGO, delivery, analytics, and chatbot surfaces while preserving the current Stitch UI structure.
+- Updated chatbot fallback and Gemini system prompt to use Sharebite naming.
+- No database table names, seed data, uploads, donation zones, dropdown status controls, or login behavior were changed.
+- `npm run build` passed after the Phase 2 copy changes.

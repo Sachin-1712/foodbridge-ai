@@ -41,7 +41,7 @@ Validated checks:
 
 ## Manual Demo Steps For Phase 1
 
-Use the current FoodBridge demo accounts until the Phase 9 Sharebite login change is implemented:
+Use the current legacy demo accounts until the Phase 9 Sharebite login change is implemented:
 
 - Donor: `donor@foodbridge.demo` / `demo123`
 - NGO: `ngo@foodbridge.demo` / `demo123`

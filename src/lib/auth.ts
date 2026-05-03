@@ -1,4 +1,4 @@
-// FoodBridge Demo Auth
+// Sharebite Demo Auth
 // Simple cookie-based session for demo purposes
 import { cookies } from 'next/headers';
 import { getUserByEmail, getUserById } from './store';

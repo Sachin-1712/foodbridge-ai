@@ -80,13 +80,13 @@ Chatbot:
 - Chat panel receives `userRole`, but the current `/api/chat` request does not pass role context to the API.
 - `/api/chat` attempts Gemini when `GEMINI_API_KEY` exists.
 - Fallback responses are deterministic FAQ text.
-- Chatbot copy still uses FoodBridge naming and generic role behavior.
+- Chatbot copy still uses the old app naming and generic role behavior.
 
 Seed and docs:
 
 - `scripts/seed.js`, `scripts/supabase-seed.js`, and `src/lib/seed.ts` still contain London/Covent Garden data.
 - Live Supabase data is already partly Bangalore-localized, so the database and local seed scripts are out of sync.
-- Existing docs still use FoodBridge branding and include stale schema descriptions.
+- Existing docs still use old app branding and include stale schema descriptions.
 
 ## What Is Currently Working
 

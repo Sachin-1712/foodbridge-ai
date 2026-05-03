@@ -36,7 +36,7 @@ function generateResponse(question: string): string {
     return faqResponses['analytics'];
   }
   
-  return `I can help you with questions about FoodBridge! Try asking about:\n• How to create a donation\n• What status badges mean\n• How smart matching works\n• What to do with urgent donations\n• How the delivery process works\n• NGO analytics and metrics`;
+  return `I can help you with questions about Sharebite! Try asking about:\n• How to create a donation\n• What status badges mean\n• How smart matching works\n• What to do with urgent donations\n• How the delivery process works\n• NGO analytics and metrics`;
 }
 
 export async function POST(request: NextRequest) {
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     
     if (!lastText) {
       console.log(`[Chat API ${requestId}] No user message found.`);
-      return NextResponse.json({ reply: 'Please ask me a question about FoodBridge!' });
+      return NextResponse.json({ reply: 'Please ask me a question about Sharebite!' });
     }
 
     // Try Gemini if key exists
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify({
             contents: sanitizedMessages.slice(-6), // keep last few exchanges
             systemInstruction: {
-              parts: [{ text: `You are the FoodBridge platform assistant. FoodBridge connects food donors (restaurants, bakeries) with NGOs through delivery partners. 
+              parts: [{ text: `You are the Sharebite platform assistant. Sharebite connects food donors (restaurants, bakeries) with NGOs through delivery partners. 
               DONOR FLOW: Create donation -> Match with NGO -> Delivery assigned -> Food picked up -> Delivered.
               NGO FLOW: View marketplace -> Accept donation -> Track delivery -> Receive food.
               DELIVERY FLOW: View assigned jobs -> Accept -> Pick up -> Mark in-transit -> Deliver.

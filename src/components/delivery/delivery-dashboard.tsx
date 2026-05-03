@@ -38,10 +38,10 @@ interface DeliveryDashboardProps {
 const statusFlow: DeliveryStatus[] = ['assigned', 'accepted', 'picked_up', 'in_transit', 'delivered'];
 
 const statusActions: Record<DeliveryStatus, { label: string; next: DeliveryStatus | null; color: string }> = {
-  assigned: { label: 'Accept Journey', next: 'accepted', color: 'bg-fb-primary' },
-  accepted: { label: 'Confirm Pickup', next: 'picked_up', color: 'bg-blue-600' },
-  picked_up: { label: 'Start Transit', next: 'in_transit', color: 'bg-amber-600' },
-  in_transit: { label: 'Complete Delivery', next: 'delivered', color: 'bg-fb-primary' },
+  assigned: { label: 'Accept Job', next: 'accepted', color: 'bg-fb-primary' },
+  accepted: { label: 'Mark Picked Up', next: 'picked_up', color: 'bg-blue-600' },
+  picked_up: { label: 'Start Delivery', next: 'in_transit', color: 'bg-amber-600' },
+  in_transit: { label: 'Mark Delivered', next: 'delivered', color: 'bg-fb-primary' },
   delivered: { label: 'Completed', next: null, color: 'bg-zinc-500' },
 };
 
@@ -68,7 +68,7 @@ const IntelligencePanel = ({ job }: { job: DeliveryJob }) => {
           <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md">
             <Zap className="w-4 h-4 text-[#95d5b2] fill-[#95d5b2]/20" />
           </div>
-          <span className="text-[10px] font-black text-[#95d5b2] uppercase tracking-[0.2em]">Route Intelligence</span>
+          <span className="text-[10px] font-black text-[#95d5b2] uppercase tracking-[0.2em]">Route Suggestion</span>
         </div>
         
         <p className="text-sm font-medium text-white leading-relaxed tracking-tight">
@@ -166,14 +166,14 @@ const MapViewport = ({ job }: { job: DeliveryJob | null }) => {
             <div className="space-y-1">
               <div className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-fb-primary" />
-                Origin Point
+                Pickup
               </div>
               <p className="text-xs font-bold text-fb-on-surface leading-tight line-clamp-2">{job.pickupAddress}</p>
             </div>
             <div className="space-y-1">
               <div className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#7d562d]" />
-                Destination Point
+                Drop-off
               </div>
               <p className="text-xs font-bold text-fb-on-surface leading-tight line-clamp-2">{job.dropAddress}</p>
             </div>
@@ -184,9 +184,9 @@ const MapViewport = ({ job }: { job: DeliveryJob | null }) => {
           <div className="w-24 h-24 bg-fb-surface-container rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner rotate-12 transition-transform hover:rotate-0 duration-700">
             <MapIcon className="w-10 h-10 text-fb-outline-variant -rotate-12" />
           </div>
-          <h3 className="text-xl font-black text-fb-on-surface tracking-tight">Console Offline</h3>
+          <h3 className="text-xl font-black text-fb-on-surface tracking-tight">No Job Selected</h3>
           <p className="text-sm text-fb-on-surface-variant mt-2 max-w-xs leading-relaxed">
-            Select a prioritized route from the dispatch queue to activate the tactical overlay.
+            Select a delivery job to view route details.
           </p>
         </div>
       )}
@@ -217,7 +217,7 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
       });
 
       if (res.ok) {
-        toast.success(`Journey update: ${statusLabels[newStatus]}`, {
+        toast.success(`Status updated: ${statusLabels[newStatus]}`, {
           description: newStatus === 'delivered' ? '🎉 Delivery successfully logged.' : undefined,
           icon: <CheckCircle2 className="w-4 h-4 text-fb-primary" />,
         });
@@ -242,16 +242,16 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="font-[family-name:var(--font-heading)] text-3xl font-black tracking-tight text-fb-on-surface">
-            Logistics Console
+            Delivery Dashboard
           </h1>
           <div className="flex items-center gap-4 mt-1.5">
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-fb-primary/10 rounded-full border border-fb-primary/10">
               <div className="w-1.5 h-1.5 rounded-full bg-fb-primary animate-pulse" />
-              <span className="text-[10px] font-black text-fb-primary uppercase tracking-widest">Operator Active</span>
+              <span className="text-[10px] font-black text-fb-primary uppercase tracking-widest">Driver Active</span>
             </div>
             <Separator orientation="vertical" className="h-4 bg-fb-outline-variant/30" />
             <p className="text-xs font-medium text-fb-on-surface-variant">
-              Fleet Monitoring System v2.4 • <span className="font-bold text-fb-on-surface">{completedJobsCount}</span> Deliveries Completed Today
+              Delivery tracking • <span className="font-bold text-fb-on-surface">{completedJobsCount}</span> Deliveries Completed Today
             </p>
           </div>
         </div>
@@ -261,23 +261,23 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
             <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${driverName}&backgroundColor=0f5238&textColor=ffffff`} alt={driverName} className="w-full h-full" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Command Partner</span>
+            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Delivery Partner</span>
             <span className="text-xs font-black text-fb-on-surface mt-1">{driverName}</span>
           </div>
         </div>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden min-h-0">
-        {/* LEFT COLUMN: Dispatch Queue */}
+        {/* LEFT COLUMN: Delivery Jobs */}
         <div className="lg:col-span-3 flex flex-col gap-4 min-h-0">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-[11px] font-black text-fb-on-surface-variant uppercase tracking-[0.2em] flex items-center gap-2">
               <Navigation className="w-3.5 h-3.5" />
-              Dispatch Queue ({activeJobs.length})
+              Delivery Jobs ({activeJobs.length})
             </h2>
             <div className="flex items-center gap-1 text-[10px] font-black text-fb-primary">
               <Zap className="w-3 h-3 fill-current" />
-              AUTO-OPTIMIZED
+              PRIORITIZED
             </div>
           </div>
           
@@ -361,7 +361,7 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-fb-primary" />
-                    <span className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Mission Segment</span>
+                    <span className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Donation</span>
                   </div>
                   <Badge variant="outline" className="text-[9px] font-mono font-black text-fb-primary border-fb-primary/20 bg-fb-primary/5 rounded-lg h-5">
                     FB-{selectedJob.id.slice(-6).toUpperCase()}
@@ -379,11 +379,11 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
               <div className="p-6 rounded-[2rem] bg-white border border-fb-outline-variant/10 shadow-sm flex-1">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-[11px] font-black text-fb-on-surface-variant uppercase tracking-[0.2em]">
-                    Journey Timeline
+                    Delivery Status
                   </h3>
                   <div className="flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 rounded-full">
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                    <span className="text-[8px] font-black text-blue-600 uppercase tracking-tighter">Live Tracking</span>
+                    <span className="text-[8px] font-black text-blue-600 uppercase tracking-tighter">Live Status</span>
                   </div>
                 </div>
                 
@@ -466,9 +466,9 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
               <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center mb-4 shadow-sm">
                 <AlertCircle className="w-8 h-8 text-fb-outline-variant" />
               </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fb-on-surface-variant">Mission Briefing</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fb-on-surface-variant">Job Details</p>
               <p className="text-[11px] mt-2 font-medium text-fb-on-surface-variant/60 leading-relaxed px-4 italic">
-                Initialize dispatch by selecting an active route from the primary queue.
+                Select an active delivery job to view details.
               </p>
             </div>
           )}

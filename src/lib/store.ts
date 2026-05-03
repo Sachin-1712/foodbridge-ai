@@ -1,4 +1,4 @@
-// FoodBridge Data Store - Supabase Implementation
+// Sharebite Data Store - Supabase Implementation
 import {
   User,
   NGOProfile,

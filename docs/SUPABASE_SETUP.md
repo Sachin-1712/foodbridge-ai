@@ -1,6 +1,6 @@
-# FoodBridge Supabase Setup
+# Sharebite Supabase Setup
 
-This document outlines the Supabase schema and setup required for the FoodBridge MVP.
+This document outlines the Supabase schema and setup required for the Sharebite MVP.
 
 ## Schema Overview
 

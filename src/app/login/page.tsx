@@ -83,8 +83,8 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
-        toast.success('System Access Authorized', {
-          description: `Welcome to the ${role.toUpperCase()} interface.`,
+        toast.success('Login successful', {
+          description: `Welcome to the ${role.toUpperCase()} dashboard.`,
         });
         router.push(`/dashboard/${role}`);
       } else {
@@ -104,7 +104,7 @@ export default function LoginPage() {
         <div className="flex items-center gap-2">
           <Leaf className="w-6 h-6 text-fb-primary" />
           <span className="font-[family-name:var(--font-heading)] text-2xl font-black tracking-tight text-fb-on-surface">
-            FoodBridge
+            Sharebite
           </span>
         </div>
         <Button variant="outline" className="rounded-full border-fb-outline-variant/30 text-fb-on-surface font-bold text-xs">
@@ -122,10 +122,10 @@ export default function LoginPage() {
         {/* Hero Section */}
         <div className="flex flex-col items-center mb-16 relative z-10 text-center">
           <h1 className="font-[family-name:var(--font-heading)] text-4xl sm:text-5xl font-black text-fb-on-surface tracking-tight mb-4">
-            Efficient Altruism Starts Here
+            Share Extra Food Easily
           </h1>
           <p className="text-fb-on-surface-variant text-base sm:text-lg max-w-2xl font-medium opacity-70">
-            Join the network connecting surplus food with communities in need. Select your role to access specialized tools for impact.
+            Connect extra food with local NGOs and delivery partners. Choose your role to start the demo.
           </p>
         </div>
 
@@ -184,7 +184,7 @@ export default function LoginPage() {
       {/* Footer */}
       <footer className="w-full py-8 text-center border-t border-stone-50 relative z-10">
         <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">
-          © 2024 FoodBridge Logistics Network
+          Sharebite 2024
         </p>
       </footer>
     </div>

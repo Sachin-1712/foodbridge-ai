@@ -98,13 +98,13 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-1.5 h-6 bg-fb-primary rounded-full" />
-            <h2 className="text-[11px] font-black text-fb-primary uppercase tracking-[0.2em]">Partner Dashboard</h2>
+            <h2 className="text-[11px] font-black text-fb-primary uppercase tracking-[0.2em]">Donor Dashboard</h2>
           </div>
           <h1 className="font-[family-name:var(--font-heading)] text-4xl font-black tracking-tight text-fb-on-surface">
             Welcome, {firstName}
           </h1>
           <p className="text-sm text-fb-on-surface-variant mt-1.5 font-medium max-w-md">
-            Reviewing your surplus redirection impact and active donation streams.
+            Track your active donations and food-sharing impact.
           </p>
         </div>
         
@@ -129,8 +129,8 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
 
       {/* KPI Bento Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <KPICard label="Active Streams" value={stats.activeDonations.toString()} subtitle="Pending Logistics" icon={Clock} color="bg-blue-600" />
-        <KPICard label="Meals Rescued" value={stats.mealsDoated.toLocaleString()} subtitle="Direct Impact" icon={Utensils} color="bg-fb-primary" />
+        <KPICard label="Active Donations" value={stats.activeDonations.toString()} subtitle="In Progress" icon={Clock} color="bg-blue-600" />
+        <KPICard label="Meals Rescued" value={stats.mealsDoated.toLocaleString()} subtitle="Food Shared" icon={Utensils} color="bg-fb-primary" />
         <KPICard label="Impact Points" value={stats.impactScore.toLocaleString()} subtitle="Community Score" icon={Heart} color="bg-rose-500" />
         <KPICard label="Partnerships" value={stats.ngosHelped.toString()} subtitle="Local NGOs Supported" icon={TrendingUp} color="bg-amber-600" />
       </div>
@@ -146,8 +146,8 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
                   <BarChart3 className="w-5 h-5 text-fb-primary" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-fb-on-surface uppercase tracking-tight">Redirection Velocity</h3>
-                  <p className="text-[10px] font-bold text-fb-on-surface-variant uppercase tracking-widest opacity-60">14-Day Performance Analytics</p>
+                  <h3 className="text-sm font-black text-fb-on-surface uppercase tracking-tight">Donation Activity</h3>
+                  <p className="text-[10px] font-bold text-fb-on-surface-variant uppercase tracking-widest opacity-60">Recent donation history</p>
                 </div>
               </div>
               <Badge variant="outline" className="text-[10px] font-black border-fb-outline-variant/20 px-3 py-1 rounded-lg">LIVE DATA</Badge>
@@ -198,7 +198,7 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
             </div>
           </Card>
 
-          {/* Strategic Advisor (AI) */}
+          {/* AI Suggestion (AI) */}
           <div className="relative group overflow-hidden rounded-[2.5rem] bg-[#0f5238] p-8 shadow-lg">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32 transition-transform duration-700 group-hover:scale-110" />
             <div className="relative z-10">
@@ -207,12 +207,12 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
                   <Zap className="w-5 h-5 text-[#95d5b2]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-tight">Strategic Advisor</h3>
-                  <p className="text-[10px] font-black text-[#95d5b2] uppercase tracking-[0.2em] opacity-60">Impact Intelligence</p>
+                  <h3 className="text-sm font-black text-white uppercase tracking-tight">AI Suggestion</h3>
+                  <p className="text-[10px] font-black text-[#95d5b2] uppercase tracking-[0.2em] opacity-60">Donation Insights</p>
                 </div>
               </div>
               <p className="text-lg font-medium text-white/90 leading-relaxed tracking-tight italic">
-                "Your donation peaks mid-week. Consider scheduling pickups on Tuesdays & Wednesdays for 34% faster NGO matching."
+                "Your donations are often matched faster when pickup windows are clear and notes include storage details."
               </p>
               <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
                 <div className="flex gap-8">
@@ -243,8 +243,8 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
                   <Package className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-fb-on-surface uppercase tracking-tight">Active Stream</h3>
-                  <p className="text-[10px] font-bold text-fb-on-surface-variant uppercase tracking-widest opacity-60">Real-time status monitoring</p>
+                  <h3 className="text-sm font-black text-fb-on-surface uppercase tracking-tight">Active Donations</h3>
+                  <p className="text-[10px] font-bold text-fb-on-surface-variant uppercase tracking-widest opacity-60">Current donation status</p>
                 </div>
               </div>
               <button className="text-[10px] font-black text-fb-primary uppercase tracking-widest hover:underline">View All</button>
@@ -254,8 +254,8 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
               {recentDonations.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center p-12 text-center opacity-20 border-2 border-dashed border-fb-outline-variant/30 rounded-[2rem]">
                   <Package className="w-12 h-12 mb-4" />
-                  <p className="text-xs font-black uppercase tracking-widest">No Active Streams</p>
-                  <p className="text-[10px] mt-2 font-medium">Initialize a new donation to begin.</p>
+                  <p className="text-xs font-black uppercase tracking-widest">No Active Donations</p>
+                  <p className="text-[10px] mt-2 font-medium">Create a new donation to begin.</p>
                 </div>
               ) : (
                 recentDonations.slice(0, 8).map((d) => (
@@ -290,7 +290,7 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
               <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest">Platform Status: Optimal</span>
+                  <span className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest">Platform Status: Ready</span>
                 </div>
                 <span className="text-[9px] font-black text-fb-on-surface-variant opacity-40 uppercase">FB-DN-2024</span>
               </div>

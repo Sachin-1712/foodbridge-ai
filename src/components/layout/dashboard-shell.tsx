@@ -73,7 +73,7 @@ export function DashboardShell({ children, user }: { children: React.ReactNode; 
             <Leaf className="w-5 h-5 text-white" />
           </div>
           <span className="font-[family-name:var(--font-heading)] text-lg font-bold tracking-tight text-fb-on-surface">
-            FoodBridge
+            Sharebite
           </span>
         </div>
 
@@ -110,7 +110,7 @@ export function DashboardShell({ children, user }: { children: React.ReactNode; 
             )}
           >
             <Sparkles className={cn('w-5 h-5', chatOpen ? 'text-[#2D6A4F]' : 'text-fb-outline')} />
-            AI Assistant
+            Sharebite AI
           </button>
         </nav>
 
@@ -145,7 +145,7 @@ export function DashboardShell({ children, user }: { children: React.ReactNode; 
             <Leaf className="w-4 h-4 text-white" />
           </div>
           <span className="font-[family-name:var(--font-heading)] text-base font-bold text-fb-on-surface">
-            FoodBridge
+            Sharebite
           </span>
         </div>
         <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 rounded-lg hover:bg-fb-surface-container">
@@ -181,7 +181,7 @@ export function DashboardShell({ children, user }: { children: React.ReactNode; 
               className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-base font-medium text-fb-on-surface-variant"
             >
               <Sparkles className="w-5 h-5" />
-              AI Assistant
+              Sharebite AI
             </button>
             <div className="pt-4 border-t border-fb-outline-variant/20">
               <Button variant="ghost" onClick={handleLogout} className="w-full justify-start gap-2 text-fb-error">
@@ -205,7 +205,7 @@ export function DashboardShell({ children, user }: { children: React.ReactNode; 
         <button
           onClick={() => setChatOpen(true)}
           className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[#2D6A4F] text-white shadow-fab flex items-center justify-center hover:scale-105 transition-transform md:bottom-8 md:right-8"
-          aria-label="Open AI Assistant"
+          aria-label="Open Sharebite AI"
         >
           <MessageCircle className="w-6 h-6" />
         </button>

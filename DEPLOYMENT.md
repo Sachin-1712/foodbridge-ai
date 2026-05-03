@@ -1,6 +1,6 @@
-# Deployment Guide: FoodBridge
+# Deployment Guide: Sharebite
 
-This guide provides instructions for deploying FoodBridge to Vercel and connecting the Supabase backend.
+This guide provides instructions for deploying Sharebite to Vercel and connecting the Supabase backend.
 
 ## 🚀 One-Click Deployment
 

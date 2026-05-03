@@ -112,7 +112,7 @@ export function NGOAnalytics({ stats, analytics, donations, ngoName }: NGOAnalyt
             Analytics & <span className="text-fb-primary">Global Impact</span>
           </h1>
           <p className="text-fb-on-surface-variant text-lg max-w-2xl leading-relaxed">
-            Quantifying the humanitarian and environmental footprint of <span className="font-bold text-fb-on-surface underline decoration-fb-primary/30 underline-offset-4">{ngoName}</span>.
+            Tracking food-sharing impact for <span className="font-bold text-fb-on-surface underline decoration-fb-primary/30 underline-offset-4">{ngoName}</span>.
           </p>
         </div>
         <div className="flex flex-col items-end gap-3">
@@ -120,7 +120,7 @@ export function NGOAnalytics({ stats, analytics, donations, ngoName }: NGOAnalyt
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-bold text-fb-on-surface-variant tracking-wide flex items-center gap-2">
               <Activity className="w-4 h-4 text-fb-primary" />
-              LIVE DATA STREAM ACTIVE
+              LIVE DATA
             </span>
           </div>
         </div>
@@ -166,10 +166,10 @@ export function NGOAnalytics({ stats, analytics, donations, ngoName }: NGOAnalyt
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-2xl font-[family-name:var(--font-heading)] font-black text-fb-on-surface tracking-tight">
-                    Resource Distribution
+                    Donation Trends
                   </CardTitle>
                   <CardDescription className="text-fb-on-surface-variant text-sm font-medium">
-                    14-day operational throughput analysis
+                    14-day donation overview
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-6">
@@ -350,10 +350,10 @@ export function NGOAnalytics({ stats, analytics, donations, ngoName }: NGOAnalyt
                 </div>
                 <div>
                   <Badge className="bg-white/10 text-white border-white/20 text-[10px] uppercase tracking-widest font-bold mb-1">
-                    AI Logistics Specialist
+                    Donation Insights
                   </Badge>
                   <CardTitle className="text-2xl font-[family-name:var(--font-heading)] font-black tracking-tight">
-                    Strategic Advisor
+                    AI Suggestion
                   </CardTitle>
                 </div>
               </div>

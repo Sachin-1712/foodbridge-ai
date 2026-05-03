@@ -145,13 +145,13 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-1.5 h-6 bg-fb-primary rounded-full" />
-            <h2 className="text-[11px] font-black text-fb-primary uppercase tracking-[0.2em]">Inventory Hub</h2>
+            <h2 className="text-[11px] font-black text-fb-primary uppercase tracking-[0.2em]">NGO Dashboard</h2>
           </div>
           <h1 className="font-[family-name:var(--font-heading)] text-4xl font-black tracking-tight text-fb-on-surface">
             NGO Marketplace
           </h1>
           <p className="text-sm text-fb-on-surface-variant mt-1.5 font-medium max-w-md">
-            Operational center for <span className="text-fb-on-surface font-black">{ngoName}</span>. Secure surplus streams and optimize distribution.
+            Review available donations for <span className="text-fb-on-surface font-black">{ngoName}</span> and accept what you can use.
           </p>
         </div>
         
@@ -163,7 +163,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
             <span className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-none">Status</span>
             <div className="flex items-center gap-1.5 mt-1">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-black text-fb-on-surface uppercase">Online & Operational</span>
+              <span className="text-[10px] font-black text-fb-on-surface uppercase">Ready</span>
             </div>
           </div>
         </div>
@@ -171,10 +171,10 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
 
       {/* KPI Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <KPICard label="Mission Flow" value={stats.thisWeek.toString()} subtitle="Donations Processed" icon={Package} color="text-fb-primary" />
-        <KPICard label="Rescued Yield" value={stats.mealsRescued.toLocaleString()} subtitle="Total Portions Secured" icon={Utensils} color="text-emerald-600" />
-        <KPICard label="Sync Velocity" value={`${stats.avgAcceptanceMinutes}m`} subtitle="Avg. Confirmation Time" icon={Timer} color="text-amber-600" />
-        <KPICard label="Source Node" value={stats.topDonorType} subtitle="Primary Surplus Channel" icon={Building2} color="text-fb-primary" />
+        <KPICard label="Donations" value={stats.thisWeek.toString()} subtitle="This Week" icon={Package} color="text-fb-primary" />
+        <KPICard label="Meals Rescued" value={stats.mealsRescued.toLocaleString()} subtitle="Total portions" icon={Utensils} color="text-emerald-600" />
+        <KPICard label="Response Time" value={`${stats.avgAcceptanceMinutes}m`} subtitle="Average confirmation" icon={Timer} color="text-amber-600" />
+        <KPICard label="Top Source" value={stats.topDonorType} subtitle="Common donor type" icon={Building2} color="text-fb-primary" />
       </div>
 
       {/* Main Content Area */}
@@ -210,7 +210,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-fb-outline-variant/10 shadow-2xl">
-                    <SelectItem value="all">All Channels</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
                     {Object.entries(categoryLabels).map(([val, label]) => (
                       <SelectItem key={val} value={val}>{label}</SelectItem>
                     ))}
@@ -224,9 +224,9 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-fb-outline-variant/10 shadow-2xl">
                   <SelectItem value="all">Priority: All</SelectItem>
-                  <SelectItem value="high">Critical</SelectItem>
-                  <SelectItem value="medium">Standard</SelectItem>
-                  <SelectItem value="low">Optimized</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -238,8 +238,8 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                 {filteredDonations.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center p-12 text-center opacity-20 border-2 border-dashed border-fb-outline-variant/10 rounded-[3rem]">
                     <Search className="w-16 h-16 mb-4" />
-                    <h3 className="text-xl font-black uppercase tracking-tight">Node Scanned: Zero Results</h3>
-                    <p className="text-sm mt-2 max-w-xs font-medium">New surplus signals will appear here once broadcasted by donors.</p>
+                    <h3 className="text-xl font-black uppercase tracking-tight">No Donations Found</h3>
+                    <p className="text-sm mt-2 max-w-xs font-medium">New donations will appear here when donors create them.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 pb-12">
@@ -260,8 +260,8 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                 {inProgressDonations.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center p-12 text-center opacity-20 border-2 border-dashed border-fb-outline-variant/10 rounded-[3rem]">
                     <Package className="w-16 h-16 mb-4" />
-                    <h3 className="text-xl font-black uppercase tracking-tight">Zero Active Streams</h3>
-                    <p className="text-sm mt-2 max-w-xs font-medium">Accept available marketplace signals to populate your active inventory.</p>
+                    <h3 className="text-xl font-black uppercase tracking-tight">No Active Donations</h3>
+                    <p className="text-sm mt-2 max-w-xs font-medium">Accept available donations to see them here.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12">
@@ -318,7 +318,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                   <div className="flex items-center gap-3">
                     <UrgencyBadge urgency={selectedDonation.urgency} className="h-6 px-4 text-[10px] font-black" />
                     {selectedDonation.isVegetarian && (
-                      <Badge className="bg-fb-primary/10 text-fb-primary border-none px-4 h-6 text-[10px] font-black uppercase tracking-widest">Plant-Based</Badge>
+                      <Badge className="bg-fb-primary/10 text-fb-primary border-none px-4 h-6 text-[10px] font-black uppercase tracking-widest">Vegetarian</Badge>
                     )}
                   </div>
                   <span className="text-[10px] font-mono font-black text-fb-on-surface-variant/40 uppercase tracking-widest">Stream ID: {selectedDonation.id.slice(-6).toUpperCase()}</span>
@@ -331,9 +331,9 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                 </DialogTitle>
                 
                 <div className="mt-10 grid grid-cols-3 gap-8 relative z-10">
-                  <DetailItem label="Allocated Volume" value={`${selectedDonation.quantity} ${selectedDonation.unit}`} icon={Package} />
-                  <DetailItem label="Resource Type" value={categoryLabels[selectedDonation.category]} icon={Utensils} />
-                  <DetailItem label="Origin Point" value={selectedDonation.locationName} icon={MapPin} />
+                  <DetailItem label="Quantity" value={`${selectedDonation.quantity} ${selectedDonation.unit}`} icon={Package} />
+                  <DetailItem label="Food Type" value={categoryLabels[selectedDonation.category]} icon={Utensils} />
+                  <DetailItem label="Pickup Location" value={selectedDonation.locationName} icon={MapPin} />
                 </div>
               </div>
 
@@ -350,7 +350,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                           <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md">
                             <Sparkles className="w-5 h-5 text-[#95d5b2]" />
                           </div>
-                          <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Logistics Intelligence</span>
+                          <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Match Suggestion</span>
                         </div>
                         <div className="flex items-baseline gap-1">
                           <span className="text-3xl font-black text-[#95d5b2]">{selectedDonation.matchScore}</span>
@@ -366,7 +366,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div className="space-y-3">
-                    <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40">Deployment Window</span>
+                    <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40">Pickup Window</span>
                     <div className="flex items-center gap-3 text-sm font-black text-fb-on-surface bg-fb-surface-container-low p-4 rounded-2xl border border-fb-outline-variant/5">
                       <Timer className="w-5 h-5 text-fb-primary" />
                       {new Date(selectedDonation.pickupStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -376,7 +376,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                   </div>
                   {selectedDonation.notes && (
                     <div className="space-y-3">
-                      <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40">Tactical Notes</span>
+                      <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40">Notes</span>
                       <p className="text-xs font-medium text-fb-on-surface-variant bg-fb-surface-container-low p-4 rounded-2xl border border-fb-outline-variant/5 italic leading-relaxed">
                         {selectedDonation.notes}
                       </p>
@@ -390,7 +390,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                     className="h-16 flex-1 rounded-[1.5rem] border-fb-outline-variant/20 text-xs font-black uppercase tracking-widest hover:bg-fb-surface-container transition-all"
                     onClick={() => setSelectedDonation(null)}
                   >
-                    Decline Signal
+                    Close
                   </Button>
                   <Button
                     className="h-16 flex-1 rounded-[1.5rem] bg-[#0f5238] text-white hover:bg-[#1b4332] shadow-ambient-3 active:scale-[0.98] transition-all text-xs font-black uppercase tracking-widest gap-3"
@@ -401,7 +401,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <>
-                        Secure & Deploy Fleet
+                        Accept Donation
                         <ArrowUpRight className="w-5 h-5" />
                       </>
                     )}

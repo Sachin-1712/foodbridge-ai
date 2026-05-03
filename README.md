@@ -1,12 +1,12 @@
-# FoodBridge: AI-Powered Food Rescue Network
+# Sharebite: AI-Powered Food Rescue Network
 
-FoodBridge is a professional, full-stack platform designed to bridge the gap between food donors (restaurants, grocery stores) and NGOs to minimize food waste and support local communities.
+Sharebite is a professional, full-stack platform designed to bridge the gap between food donors (restaurants, grocery stores) and NGOs to minimize food waste and support local communities.
 
-![FoodBridge Banner](public/banner.png) *Note: Replace with actual screenshot*
+![Sharebite Banner](public/banner.png) *Note: Replace with actual screenshot*
 
 ## 🚀 Overview
 
-FoodBridge optimizes the food donation pipeline using a **Hybrid Intelligence Architecture**. By combining deterministic matching heuristics with AI-driven assistance, it ensures that surplus food is rescued and delivered to those in need with maximum efficiency and transparency.
+Sharebite optimizes the food donation pipeline using a **Hybrid Intelligence Architecture**. By combining deterministic matching heuristics with AI-driven assistance, it ensures that surplus food is rescued and delivered to those in need with maximum efficiency and transparency.
 
 ### Key Roles
 - **Donors**: Easily list surplus food with urgency levels and categories.
@@ -32,7 +32,7 @@ FoodBridge optimizes the food donation pipeline using a **Hybrid Intelligence Ar
 
 ## 🏗️ Architecture Summary
 
-FoodBridge utilizes a **Hybrid Intelligence** approach:
+Sharebite utilizes a **Hybrid Intelligence** approach:
 1. **True AI**: Gemini 2.5 Flash handles natural language queries and user assistance via `/api/chat`.
 2. **Heuristic Engine**: Match suggestions are calculated via a weighted multi-signal algorithm (`store.ts`) for stability and reliability.
 3. **Live Data Aggregation**: Performance metrics are computed on-the-fly from Postgres donation records to ensure data integrity.

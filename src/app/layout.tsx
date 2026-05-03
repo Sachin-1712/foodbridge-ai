@@ -17,8 +17,8 @@ const body = Work_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "FoodBridge — Food Waste Redistribution Platform",
-  description: "Connect food donors with NGOs and delivery partners to reduce food waste and feed communities.",
+  title: "Sharebite - Food Donation Platform",
+  description: "Connect food donors with NGOs and delivery partners to share extra food with communities.",
 };
 
 export default function RootLayout({

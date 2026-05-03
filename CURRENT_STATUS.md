@@ -41,10 +41,34 @@ Verified scenarios:
 - Delivery user updated the job through `accepted`, `picked_up`, `in_transit`, and `delivered`.
 - Donor and NGO donation views reflected final status `delivered`.
 
+## Phase 2 Complete: Sharebite Rename And Simpler Copy
+
+Visible app branding has been renamed to Sharebite without changing database table names, seed data, login behavior, upload behavior, donation zones, or status controls.
+
+Phase 2 changes:
+
+- Renamed app metadata and visible app branding to Sharebite.
+- Updated login, sidebar/mobile header, chatbot labels, README, deployment docs, setup docs, and design docs.
+- Simplified donor, NGO, delivery, analytics, and chatbot wording while keeping the current Stitch UI style.
+- Replaced the requested phrases:
+  - "Efficient Altruism Starts Here" -> "Share Extra Food Easily"
+  - "Plant-Based Registry" -> "Vegetarian Food"
+  - "Deployment Parameters" -> "Pickup Details"
+  - "Priority Protocol" -> "Pickup Urgency"
+  - "Operational Directives" -> "Notes"
+  - "Strategic Advisor" -> "AI Suggestion"
+  - "Impact Intelligence" -> "Donation Insights"
+  - "Mission Segment" -> "Donation"
+  - "Route Intelligence" -> "Route Suggestion"
+  - "Intelligence Node" -> "Sharebite AI"
+
+Phase 2 verification:
+
+- `npm run build` passed.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.
 - One pre-existing inconsistent live demo row remains quarantined/documented instead of deleted.
 - Local seed scripts still contain old London demo data; this is planned for Phase 3.
-- Visible branding and copy still say FoodBridge; this is planned for Phase 2.
 - No photo upload/storage work was done; this is planned for Phase 6.

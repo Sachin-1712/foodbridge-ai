@@ -1,8 +1,8 @@
-# FoodBridge Demo MVP — Product Requirements Document
+# Sharebite Demo MVP — Product Requirements Document
 
 ## 1. Project Summary
 
-FoodBridge is a demo-ready food waste redistribution web application inspired by the clarity and low-friction workflow of Too Good To Go, but adapted for donation redistribution rather than consumer resale. The app connects food donors, NGOs, and delivery partners through three role-based dashboards. The goal is not a production system. The goal is a polished final-year-project MVP that convincingly demonstrates the core workflow end to end.
+Sharebite is a demo-ready food waste redistribution web application inspired by the clarity and low-friction workflow of Too Good To Go, but adapted for donation redistribution rather than consumer resale. The app connects food donors, NGOs, and delivery partners through three role-based dashboards. The goal is not a production system. The goal is a polished final-year-project MVP that convincingly demonstrates the core workflow end to end.
 
 This PRD intentionally narrows the original brief into a buildable demo scope:
 - Donor posts surplus food
@@ -14,7 +14,7 @@ This PRD intentionally narrows the original brief into a buildable demo scope:
 
 ## 2. Context From Brief
 
-The uploaded brief defines FoodBridge as an AI-powered food waste management system with three core modules:
+The uploaded brief defines Sharebite as an AI-powered food waste management system with three core modules:
 - Client / Donor
 - Delivery Partner
 - NGO / Recipient

@@ -1,4 +1,4 @@
-# FoodBridge Design System (Stitch)
+# Sharebite Design System (Stitch)
 
 ## Core Aesthetics
 **Efficient Altruism:** Balances logistical urgency with humanitarian warmth.

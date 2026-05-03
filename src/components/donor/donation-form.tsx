@@ -88,8 +88,8 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
       });
 
       if (res.ok) {
-        toast.success('Donation Signal Broadcasted!', {
-          description: 'AI is now matching your surplus with high-impact NGOs.',
+        toast.success('Donation created', {
+          description: 'Sharebite is matching your food with nearby NGOs.',
           icon: <Sparkles className="w-4 h-4 text-fb-primary" />,
         });
         router.push('/dashboard/donor');
@@ -120,13 +120,13 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-1.5 h-6 bg-fb-primary rounded-full" />
-              <h2 className="text-[11px] font-black text-fb-primary uppercase tracking-[0.2em]">New Broadcast</h2>
+              <h2 className="text-[11px] font-black text-fb-primary uppercase tracking-[0.2em]">New Donation</h2>
             </div>
             <h1 className="font-[family-name:var(--font-heading)] text-4xl font-black tracking-tight text-fb-on-surface">
-              Logistics Entry
+              Donation Details
             </h1>
             <p className="text-sm text-fb-on-surface-variant mt-1.5 font-medium max-w-md">
-              Input surplus details for autonomous logistics matching and high-efficiency distribution.
+              Add the food details, pickup time, and notes for the NGO.
             </p>
           </div>
         </div>
@@ -143,12 +143,12 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                   <div className="p-2 rounded-xl bg-fb-primary/5 text-fb-primary">
                     <Package className="w-5 h-5" />
                   </div>
-                  <h3 className="text-sm font-black text-fb-on-surface uppercase tracking-widest">Resource Specs</h3>
+                  <h3 className="text-sm font-black text-fb-on-surface uppercase tracking-widest">Food Details</h3>
                 </div>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Broadcast Title</Label>
+                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Donation Title</Label>
                     <Input
                       value={form.title}
                       onChange={(e) => update('title', e.target.value)}
@@ -160,10 +160,10 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Logistics Category</Label>
+                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Food Category</Label>
                       <Select value={form.category} onValueChange={(v) => update('category', v)}>
                         <SelectTrigger className="bg-fb-surface-container-low border-fb-outline-variant/5 rounded-2xl h-14 font-bold">
-                          <SelectValue placeholder="Select Sector" />
+                          <SelectValue placeholder="Select Category" />
                         </SelectTrigger>
                         <SelectContent className="rounded-2xl shadow-2xl">
                           {categories.map((c) => (
@@ -185,7 +185,7 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Volume Quantity</Label>
+                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Quantity</Label>
                       <Input
                         type="number"
                         value={form.quantity}
@@ -197,7 +197,7 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Metrics Unit</Label>
+                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Unit</Label>
                       <Select value={form.unit} onValueChange={(v) => update('unit', v)}>
                         <SelectTrigger className="bg-fb-surface-container-low border-fb-outline-variant/5 rounded-2xl h-14 font-bold">
                           <SelectValue />
@@ -218,8 +218,8 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                         <Leaf className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-black text-fb-on-surface uppercase tracking-widest">Plant-Based Registry</p>
-                        <p className="text-[10px] font-bold text-fb-primary uppercase opacity-60">Vegetarian Optimization</p>
+                        <p className="text-xs font-black text-fb-on-surface uppercase tracking-widest">Vegetarian Food</p>
+                        <p className="text-[10px] font-bold text-fb-primary uppercase opacity-60">Vegetarian option</p>
                       </div>
                     </div>
                     <Switch
@@ -237,18 +237,18 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                   <div className="p-2 rounded-xl bg-fb-primary/5 text-fb-primary">
                     <MapPin className="w-5 h-5" />
                   </div>
-                  <h3 className="text-sm font-black text-fb-on-surface uppercase tracking-widest">Deployment Parameters</h3>
+                  <h3 className="text-sm font-black text-fb-on-surface uppercase tracking-widest">Pickup Details</h3>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Coordinates / Address</Label>
+                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Pickup Address</Label>
                     <div className="relative group">
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-fb-on-surface-variant group-focus-within:text-fb-primary transition-colors" />
                       <Input
                         value={form.locationName}
                         onChange={(e) => update('locationName', e.target.value)}
-                        placeholder="Scan for location or enter manually..."
+                        placeholder="Enter pickup location..."
                         required
                         className="bg-fb-surface-container-low border-fb-outline-variant/5 pl-12 rounded-2xl h-14 font-bold"
                       />
@@ -257,7 +257,7 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Window Open</Label>
+                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Pickup Start</Label>
                       <div className="relative group">
                         <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-fb-on-surface-variant opacity-40" />
                         <Input
@@ -270,7 +270,7 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Window Close</Label>
+                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Pickup End</Label>
                       <div className="relative group">
                         <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-fb-on-surface-variant opacity-40" />
                         <Input
@@ -285,7 +285,7 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Priority Protocol</Label>
+                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Pickup Urgency</Label>
                     <Select value={form.urgency} onValueChange={(v) => update('urgency', v)}>
                       <SelectTrigger className="bg-fb-surface-container-low border-fb-outline-variant/5 rounded-2xl h-14 font-bold">
                         <SelectValue />
@@ -299,11 +299,11 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Operational Directives (Optional)</Label>
+                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Notes (Optional)</Label>
                     <Textarea
                       value={form.notes}
                       onChange={(e) => update('notes', e.target.value)}
-                      placeholder="Storage constraints, access codes, or allergen disclosures..."
+                      placeholder="Storage instructions, access notes, or allergens..."
                       rows={4}
                       className="bg-fb-surface-container-low border-fb-outline-variant/5 rounded-[1.5rem] resize-none font-medium p-4"
                     />
@@ -322,7 +322,7 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
               <div className="flex items-center gap-3">
-                Authorize Deployment
+                Create Donation
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </div>
             )}
@@ -338,31 +338,31 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                   <Sparkles className="w-5 h-5 text-[#95d5b2]" />
                 </div>
                 <div>
-                  <h4 className="text-[11px] font-black text-white uppercase tracking-widest">Intake Intelligence</h4>
-                  <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Tactical Suggestions</p>
+                  <h4 className="text-[11px] font-black text-white uppercase tracking-widest">Donation Tips</h4>
+                  <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Helpful Suggestions</p>
                 </div>
               </div>
 
               <div className="space-y-6">
                 <IntelligenceTip 
                   icon={Zap}
-                  title="Naming Logic"
-                  text={'Specific titles like "Batch 04 Surplus" get matched 2.4x faster by NGO procurement nodes.'} 
+                  title="Clear Titles"
+                  text={'Specific titles like "Fresh veg meals" help NGOs understand the donation quickly.'} 
                 />
                 <IntelligenceTip 
                   icon={AlertCircle}
-                  title="Demand High"
-                  text="Cooked meals and bakery items currently have a 98% acceptance rate in your sector." 
+                  title="Popular Items"
+                  text="Cooked meals and bakery items are usually accepted quickly." 
                 />
                 <IntelligenceTip 
                   icon={Calendar}
-                  title="Optimal Window"
-                  text="Logistics networks are most fluid between 09:00 and 11:30. Consider scheduling then." 
+                  title="Best Pickup Time"
+                  text="Morning pickup windows are often easier for NGOs and delivery partners." 
                 />
                 <IntelligenceTip 
                   icon={Info}
-                  title="Compliance"
-                  text="Adding tactical notes on allergens reduces verification latency by 12 minutes." 
+                  title="Food Notes"
+                  text="Adding allergen and storage notes helps NGOs respond faster." 
                 />
               </div>
 
@@ -372,7 +372,7 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                   <span className="text-[9px] font-black text-white/60 uppercase tracking-widest">Network Status</span>
                 </div>
                 <p className="text-[10px] font-bold text-white leading-relaxed">
-                  FoodBridge AI is currently processing <span className="text-emerald-400">42 live streams</span> in your local logistics sector.
+                  Sharebite is checking nearby NGO matches for current donations.
                 </p>
               </div>
             </CardContent>

@@ -30,7 +30,7 @@ export function ChatPanel({ onClose, userRole }: { onClose: () => void; userRole
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `Hello! I'm the FoodBridge AI Intelligence agent. I'm currently monitoring ${
+      content: `Hello! I'm Sharebite AI. I'm currently monitoring ${
         userRole === 'donor'
           ? 'surplus trends and donation categorization'
           : userRole === 'ngo'
@@ -105,11 +105,11 @@ export function ChatPanel({ onClose, userRole }: { onClose: () => void; userRole
           </div>
           <div>
             <h2 className="font-black text-sm text-fb-on-surface tracking-tight uppercase">
-              Intelligence Node
+              Sharebite AI
             </h2>
             <div className="flex items-center gap-1.5">
               <p className="text-[10px] font-black text-fb-primary uppercase tracking-[0.1em]">
-                FoodBridge AI
+                Sharebite AI
               </p>
             </div>
           </div>
@@ -173,7 +173,7 @@ export function ChatPanel({ onClose, userRole }: { onClose: () => void; userRole
         {/* Quick replies */}
         {messages.length <= 1 && !loading && (
           <div className="flex flex-col gap-3 pt-4 pl-12">
-            <p className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-60">Suggested Inquiries</p>
+            <p className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-60">Suggested Questions</p>
             <div className="flex flex-col gap-2">
               {quickReplies.map((qr) => (
                 <button
@@ -210,7 +210,7 @@ export function ChatPanel({ onClose, userRole }: { onClose: () => void; userRole
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your strategic request..."
+            placeholder="Ask Sharebite AI..."
             disabled={loading}
             className="w-full bg-fb-surface-container-lowest border border-fb-outline-variant/20 rounded-2xl py-4 pl-12 pr-16 text-[13px] text-fb-on-surface placeholder:text-fb-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-[#0f5238]/10 focus:border-fb-primary/30 transition-all disabled:opacity-60 shadow-sm"
           />
@@ -233,7 +233,7 @@ export function ChatPanel({ onClose, userRole }: { onClose: () => void; userRole
           </button>
         </form>
         <p className="text-[9px] text-center text-fb-on-surface-variant/40 mt-4 uppercase tracking-widest font-black">
-          Encrypted Session • Operational Support Node
+          Sharebite support chat
         </p>
       </div>
     </div>

@@ -1,4 +1,4 @@
-// FoodBridge Type Definitions
+// Sharebite Type Definitions
 
 export type UserRole = 'donor' | 'ngo' | 'delivery';
 

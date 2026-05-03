@@ -1,4 +1,4 @@
-# FoodBridge Project Status
+# Sharebite Project Status
 
 ## Recent Accomplishments (Workflow Stabilization Pass)
 
