@@ -32,16 +32,16 @@ Status key:
   - Demo seed scripts, Supabase demo rows, docs, and map addresses now use Bangalore data.
   - Bangalore areas include Koramangala, Indiranagar, Jayanagar, Whitefield, HSR Layout, MG Road, Electronic City, JP Nagar, Malleshwaram, Marathahalli, and Hebbal.
 
-- [ ] 4. Status update dropdown
-  - Current delivery dashboard uses click-to-advance buttons.
-  - Planned statuses:
-    - Open
+- [x] 4. Status update dropdown
+  - Delivery dashboard now uses a dropdown for delivery job status updates.
+  - Dropdown statuses:
+    - Assigned
     - Accepted
-    - Pickup Assigned
     - Picked Up
     - In Transit
     - Delivered
     - Cancelled
+  - Delivery status updates sync the related donation status across donor and NGO views.
 
 - [ ] 5. Donation zones + map/prediction insights
   - Not implemented.
@@ -96,7 +96,7 @@ Status key:
 - [x] Phase 1 - Stabilize cross-role donation workflow.
 - [x] Phase 2 - Rename app to Sharebite and simplify copy.
 - [x] Phase 3 - Localize demo data for Bangalore.
-- [ ] Phase 4 - Add status dropdown.
+- [x] Phase 4 - Add status dropdown.
 - [ ] Phase 5 - Add donor edit and delete controls.
 - [ ] Phase 6 - Add food photo upload.
 - [ ] Phase 7 - Add donation zones and predictive insights.
@@ -138,3 +138,13 @@ Status key:
 - Seeded examples now cover `open`, `accepted`, `pickup_assigned`, `in_transit`, `delivered`, and `cancelled`.
 - Current login behavior and demo emails are intentionally unchanged until Phase 9.
 - `npm run seed:demo` passed and `npm run build` passed after the Phase 3 changes.
+
+## Current Phase 4 Notes
+
+- Replaced the delivery dashboard click-to-advance action button with a dropdown.
+- Added `cancelled` as a delivery job status and mapped it to donation status `cancelled`.
+- Completed and cancelled jobs are excluded from active delivery jobs after refresh.
+- Phase 1 role checks remain in place: only delivery users can update delivery jobs.
+- API workflow test passed for `accepted`, `picked_up`, `in_transit`, `delivered`, `cancelled`, and restore to `assigned`.
+- Donor and NGO API views reflected the synced `delivered` donation status during testing.
+- `npm run build` passed after the Phase 4 changes.

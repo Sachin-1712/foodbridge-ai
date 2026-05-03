@@ -6,6 +6,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { DeliveryJob, DeliveryStatus } from '@/types';
 import { toast } from 'sonner';
@@ -36,14 +43,8 @@ interface DeliveryDashboardProps {
 }
 
 const statusFlow: DeliveryStatus[] = ['assigned', 'accepted', 'picked_up', 'in_transit', 'delivered'];
-
-const statusActions: Record<DeliveryStatus, { label: string; next: DeliveryStatus | null; color: string }> = {
-  assigned: { label: 'Accept Job', next: 'accepted', color: 'bg-fb-primary' },
-  accepted: { label: 'Mark Picked Up', next: 'picked_up', color: 'bg-blue-600' },
-  picked_up: { label: 'Start Delivery', next: 'in_transit', color: 'bg-amber-600' },
-  in_transit: { label: 'Mark Delivered', next: 'delivered', color: 'bg-fb-primary' },
-  delivered: { label: 'Completed', next: null, color: 'bg-zinc-500' },
-};
+const terminalStatuses: DeliveryStatus[] = ['delivered', 'cancelled'];
+const statusOptions: DeliveryStatus[] = [...statusFlow, 'cancelled'];
 
 const statusLabels: Record<DeliveryStatus, string> = {
   assigned: 'Assigned',
@@ -51,6 +52,7 @@ const statusLabels: Record<DeliveryStatus, string> = {
   picked_up: 'Picked Up',
   in_transit: 'In Transit',
   delivered: 'Delivered',
+  cancelled: 'Cancelled',
 };
 
 // --- Sub-components ---
@@ -198,8 +200,8 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
-  const activeJobs = useMemo(() => jobs.filter((j) => j.status !== 'delivered'), [jobs]);
-  const completedJobsCount = useMemo(() => jobs.filter((j) => j.status === 'delivered').length, [jobs]);
+  const activeJobs = useMemo(() => jobs.filter((j) => !terminalStatuses.includes(j.status)), [jobs]);
+  const completedJobsCount = useMemo(() => jobs.filter((j) => terminalStatuses.includes(j.status)).length, [jobs]);
 
   const [selectedJobId, setSelectedJobId] = useState<string | null>(
     activeJobs.length > 0 ? activeJobs[0].id : null
@@ -208,6 +210,9 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
   const selectedJob = activeJobs.find(j => j.id === selectedJobId) || (activeJobs.length > 0 ? activeJobs[0] : null);
 
   const handleStatusUpdate = async (jobId: string, newStatus: DeliveryStatus) => {
+    const currentJob = jobs.find((job) => job.id === jobId);
+    if (currentJob?.status === newStatus) return;
+
     setLoading(jobId);
     try {
       const res = await fetch('/api/delivery', {
@@ -217,13 +222,18 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
       });
 
       if (res.ok) {
-        toast.success(`Status updated: ${statusLabels[newStatus]}`, {
+        toast.success('Status updated', {
           description: newStatus === 'delivered' ? '🎉 Delivery successfully logged.' : undefined,
           icon: <CheckCircle2 className="w-4 h-4 text-fb-primary" />,
         });
+        if (terminalStatuses.includes(newStatus) && selectedJobId === jobId) {
+          const nextActiveJob = activeJobs.find((job) => job.id !== jobId);
+          setSelectedJobId(nextActiveJob?.id ?? null);
+        }
         router.refresh();
       } else {
-        toast.error('Sync failed');
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error || 'Sync failed');
       }
     } catch {
       toast.error('Network error');
@@ -428,36 +438,34 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
                 </div>
               </div>
 
-              {/* Strategic Action Button */}
-              {statusActions[selectedJob.status].next && (
+              {/* Status Dropdown */}
+              {!terminalStatuses.includes(selectedJob.status) && (
                 <div className="sticky bottom-0 pt-2 bg-gradient-to-t from-[#f8f9f5] via-[#f8f9f5] to-transparent">
-                  <Button
-                    className={cn(
-                      "w-full h-16 rounded-[1.75rem] text-white shadow-ambient-3 active:scale-[0.97] transition-all group overflow-hidden relative border-none",
-                      statusActions[selectedJob.status].color
-                    )}
-                    onClick={() => handleStatusUpdate(selectedJob.id, statusActions[selectedJob.status].next!)}
+                  <Select
+                    value={selectedJob.status}
+                    onValueChange={(value) => handleStatusUpdate(selectedJob.id, value as DeliveryStatus)}
                     disabled={loading === selectedJob.id}
                   >
-                    <div className="relative z-10 flex items-center justify-center gap-3">
-                      {loading === selectedJob.id ? (
-                        <>
-                          <div className="w-5 h-5 border-[3px] border-white/20 border-t-white rounded-full animate-spin" />
-                          <span className="text-xs font-black uppercase tracking-[0.2em]">Syncing...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-xs font-black uppercase tracking-[0.2em]">
-                            {statusActions[selectedJob.status].label}
-                          </span>
-                          <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </>
-                      )}
-                    </div>
-                    {/* Glossy Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute inset-0 bg-black/10 translate-y-full group-active:translate-y-0 transition-transform" />
-                  </Button>
+                    <SelectTrigger className="h-16 w-full rounded-[1.75rem] border-none bg-fb-primary px-6 text-white shadow-ambient-3 active:scale-[0.97] transition-all data-[placeholder]:text-white [&_svg]:text-white">
+                      <div className="flex min-w-0 flex-col items-start gap-1">
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70">
+                          {loading === selectedJob.id ? 'Syncing...' : 'Update Status'}
+                        </span>
+                        <SelectValue />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-2xl border-fb-outline-variant/20 bg-white p-2 shadow-ambient-3">
+                      {statusOptions.map((status) => (
+                        <SelectItem
+                          key={status}
+                          value={status}
+                          className="rounded-xl px-3 py-2 text-xs font-bold text-fb-on-surface focus:bg-fb-primary/10 focus:text-fb-primary"
+                        >
+                          {statusLabels[status]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
             </div>

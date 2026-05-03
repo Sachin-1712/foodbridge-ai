@@ -85,6 +85,40 @@ Phase 3 verification:
 - Supabase verification confirmed Bangalore donor, NGO, delivery, donation, delivery job, and analytics rows.
 - `npm run build` passed after the reseed/doc updates.
 
+## Phase 4 Complete: Delivery Status Dropdown
+
+Delivery partners can now update each active delivery job from a status dropdown instead of using click-to-advance buttons.
+
+Phase 4 changes:
+
+- Added delivery status option `cancelled`.
+- Replaced the delivery dashboard action button with a dropdown containing:
+  - `Assigned`
+  - `Accepted`
+  - `Picked Up`
+  - `In Transit`
+  - `Delivered`
+  - `Cancelled`
+- Kept the existing delivery API role check intact.
+- Synced delivery job statuses to donation statuses:
+  - `assigned` and `accepted` -> `pickup_assigned`
+  - `picked_up` -> `picked_up`
+  - `in_transit` -> `in_transit`
+  - `delivered` -> `delivered`
+  - `cancelled` -> `cancelled`
+- Kept the delivery journey timeline driven by the selected status.
+- Treats delivered and cancelled jobs as completed so they leave the active queue after refresh.
+
+Phase 4 verification:
+
+- Programmatic local API test passed against `http://localhost:3000`.
+- Delivery user changed `30 Mixed Veg Sandwiches` through `accepted`, `picked_up`, `in_transit`, and `delivered`.
+- Donor and NGO API views both reflected `delivered` for the synced donation.
+- Delivered job left the active delivery list.
+- `cancelled` status update was accepted and removed the job from active delivery jobs.
+- Test job was restored to `assigned`; related donation is back to `pickup_assigned`.
+- `npm run build` passed.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.

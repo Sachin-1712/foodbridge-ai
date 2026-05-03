@@ -150,3 +150,38 @@ npm run build
 ```
 
 Result: Passed on 2026-05-03.
+
+## Phase 4 Delivery Status Dropdown Test
+
+Purpose: verify that delivery status dropdown updates sync to Supabase and are visible to donor and NGO views after refresh.
+
+Local app URL used: `http://localhost:3000`
+
+Test job:
+
+- Donation: `30 Mixed Veg Sandwiches`
+- Delivery job id: `88888888-8888-8888-8888-888888888888`
+- Donation id: `cccc3333-4444-5555-6666-777777777777`
+
+Validated checks:
+
+- Delivery user changed status through:
+  - `accepted`
+  - `picked_up`
+  - `in_transit`
+  - `delivered`
+- Delivery job status updated in Supabase after each API call.
+- Related donation status synced to `delivered`.
+- Donor view for `donor-electronic-city@sharebite.demo` reflected `delivered`.
+- NGO view for `ngo2@foodbridge.demo` reflected `delivered`.
+- Delivered job left the active delivery list.
+- Delivery user changed status to `cancelled`; job left active delivery list.
+- Test job was restored to `assigned`; donation returned to `pickup_assigned` for the demo baseline.
+
+Build check:
+
+```bash
+npm run build
+```
+
+Result: Passed on 2026-05-03.

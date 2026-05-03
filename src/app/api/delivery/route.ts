@@ -15,6 +15,7 @@ const deliveryToDonationStatus: Record<DeliveryStatus, DonationStatus> = {
   picked_up: 'picked_up',
   in_transit: 'in_transit',
   delivered: 'delivered',
+  cancelled: 'cancelled',
 };
 
 export async function GET() {

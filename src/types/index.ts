@@ -17,7 +17,8 @@ export type DeliveryStatus =
   | 'accepted'
   | 'picked_up'
   | 'in_transit'
-  | 'delivered';
+  | 'delivered'
+  | 'cancelled';
 
 export type Urgency = 'low' | 'medium' | 'high';
 
