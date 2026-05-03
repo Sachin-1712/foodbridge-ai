@@ -1,0 +1,98 @@
+# Demo Seeding
+
+Last updated: 2026-05-03
+
+## Purpose
+
+Phase 3 adds a safe Supabase reseed flow for Sharebite demo data localized to Bangalore.
+
+The reseed script resets only known demo rows and then creates useful data for donor, NGO, delivery, and analytics demos. It does not read, write, print, or store secrets. Supabase credentials continue to come from `.env.local`.
+
+## Command
+
+```bash
+npm run seed:demo
+```
+
+This runs:
+
+```bash
+node scripts/supabase-seed.js
+```
+
+Verified on 2026-05-03: passed.
+
+## What The Script Resets
+
+The script deletes demo-only rows connected to known demo profile ids, seeded donation ids, seeded NGO ids, seeded delivery ids, or Phase 1 workflow test donations. It resets these tables in dependency order:
+
+- `match_suggestions`
+- `delivery_jobs`
+- `analytics_snapshots`
+- `donations`
+- `ngo_profiles`
+- `profiles`
+
+It does not intentionally delete unrelated production or manually-created rows.
+
+## Demo Accounts Kept For Current Login
+
+Phase 9 will update the visible login experience to Sharebite demo emails. Until then, the app still uses the existing demo login accounts:
+
+- Donor: `donor@foodbridge.demo` / `demo123`
+- NGO: `ngo@foodbridge.demo` / `demo123`
+- Delivery: `delivery@foodbridge.demo` / `demo123`
+
+## Bangalore Demo Organizations
+
+Donors:
+
+- Koramangala Kitchen
+- Indiranagar Bakery House
+- Jayanagar Event Caterers
+- Whitefield Tech Park Canteen
+- HSR Fresh Foods
+- MG Road Cafe
+- Electronic City Corporate Kitchen
+- Malleshwaram Tiffin Centre
+
+NGOs:
+
+- Bengaluru Food Relief Trust
+- Helping Hands Bangalore
+- Community Meals Foundation
+- Hope Shelter Network
+- Annadaan Bengaluru
+
+## Seeded Donations
+
+- `35 Veg Biryani Meal Boxes` from Koramangala Kitchen: `open`, urgent
+- `18 Assorted Pastries` from Indiranagar Bakery House: `open`, medium
+- `22 Fruit Salad Cups` from HSR Fresh Foods: `open`, low
+- `40 Corporate Lunch Packs` from Whitefield Tech Park Canteen: `accepted`
+- `12 Juice Bottles` from MG Road Cafe: `in_transit`
+- `25 Paneer Butter Masala Portions` from Jayanagar Event Caterers: `delivered`
+- `30 Mixed Veg Sandwiches` from Electronic City Corporate Kitchen: `pickup_assigned`
+- `15 Idli Vada Breakfast Packs` from Malleshwaram Tiffin Centre: `open`
+- `10 Lemon Rice Packs` from Koramangala Kitchen: `cancelled`
+
+## Expected Dashboard Data
+
+Donor dashboard:
+
+- The current donor demo account shows Koramangala Kitchen data, including an open urgent biryani donation and a cancelled lemon rice donation.
+
+NGO marketplace:
+
+- Open Bangalore donations appear from Koramangala, Indiranagar, HSR Layout, and Malleshwaram.
+- Match suggestions point to Bangalore NGOs.
+
+Delivery dashboard:
+
+- Active delivery jobs include Whitefield, MG Road, and Electronic City pickups.
+- Completed jobs include the delivered Jayanagar donation.
+- Pickup and drop-off addresses are Bangalore addresses suitable for Google Maps links.
+
+Analytics:
+
+- The NGO analytics data uses Bangalore activity summaries and realistic meal-rescue counts.

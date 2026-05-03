@@ -28,10 +28,9 @@ Status key:
   - The app already has a polished dashboard UI.
   - Needs final spacing, copy clarity, dropdown/upload styling, and consistency pass after functional phases.
 
-- [~] 3. Localize places to India/Bangalore
-  - Live Supabase data is already partly Bangalore-localized.
-  - Local seed scripts and docs still contain London/Covent Garden data.
-  - Planned Bangalore areas include Koramangala, Indiranagar, Jayanagar, Whitefield, HSR Layout, MG Road, Electronic City, JP Nagar, Malleshwaram, Marathahalli, and Hebbal.
+- [x] 3. Localize places to India/Bangalore
+  - Demo seed scripts, Supabase demo rows, docs, and map addresses now use Bangalore data.
+  - Bangalore areas include Koramangala, Indiranagar, Jayanagar, Whitefield, HSR Layout, MG Road, Electronic City, JP Nagar, Malleshwaram, Marathahalli, and Hebbal.
 
 - [ ] 4. Status update dropdown
   - Current delivery dashboard uses click-to-advance buttons.
@@ -96,7 +95,7 @@ Status key:
 - [x] Phase 0 - Create `CLIENT_CHANGES_TRACKER.md`.
 - [x] Phase 1 - Stabilize cross-role donation workflow.
 - [x] Phase 2 - Rename app to Sharebite and simplify copy.
-- [ ] Phase 3 - Localize demo data for Bangalore.
+- [x] Phase 3 - Localize demo data for Bangalore.
 - [ ] Phase 4 - Add status dropdown.
 - [ ] Phase 5 - Add donor edit and delete controls.
 - [ ] Phase 6 - Add food photo upload.
@@ -130,3 +129,12 @@ Status key:
 - Updated chatbot fallback and Gemini system prompt to use Sharebite naming.
 - No database table names, seed data, uploads, donation zones, dropdown status controls, or login behavior were changed.
 - `npm run build` passed after the Phase 2 copy changes.
+
+## Current Phase 3 Notes
+
+- Localized demo seed data to Bangalore areas, donor names, NGO names, pickup addresses, drop-off addresses, analytics summaries, and design reference data.
+- Added `npm run seed:demo` as the safe Supabase demo reseed command.
+- The reseed deletes only known demo rows before recreating profiles, NGO profiles, donations, match suggestions, delivery jobs, and analytics snapshots.
+- Seeded examples now cover `open`, `accepted`, `pickup_assigned`, `in_transit`, `delivered`, and `cancelled`.
+- Current login behavior and demo emails are intentionally unchanged until Phase 9.
+- `npm run seed:demo` passed and `npm run build` passed after the Phase 3 changes.

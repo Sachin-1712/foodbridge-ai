@@ -71,3 +71,82 @@ npm run build
 ```
 
 Result: Passed.
+
+## Phase 3 Bangalore Demo Reseed Test
+
+Purpose: verify that the demo dataset is localized to Bangalore and still supports the existing donor, NGO, delivery, and analytics views.
+
+### Reseed Command
+
+```bash
+npm run seed:demo
+```
+
+Expected result:
+
+- Demo-only rows are reset.
+- Bangalore profiles, NGO profiles, donations, match suggestions, delivery jobs, and analytics snapshots are recreated.
+- Existing demo login emails remain available until Phase 9 changes the login flow.
+
+Actual result: Passed on 2026-05-03.
+
+Seeded rows:
+
+- Profiles: 14
+- NGO profiles: 5
+- Donations: 9
+- Match suggestions: 8
+- Delivery jobs: 4
+- Analytics snapshots: 14
+
+### Dashboard Checks
+
+Use the current demo accounts:
+
+- Donor: `donor@foodbridge.demo` / `demo123`
+- NGO: `ngo@foodbridge.demo` / `demo123`
+- Delivery: `delivery@foodbridge.demo` / `demo123`
+
+Donor dashboard:
+
+1. Log in as donor.
+2. Confirm Koramangala Kitchen data appears.
+3. Confirm `35 Veg Biryani Meal Boxes` appears as `Open`.
+4. Confirm cancelled demo data is present only as historical/status data.
+
+NGO marketplace:
+
+1. Log in as NGO.
+2. Confirm open donations include Bangalore areas:
+   - Koramangala
+   - Indiranagar
+   - HSR Layout
+   - Malleshwaram
+3. Confirm match suggestions reference Bangalore NGOs.
+
+Delivery dashboard:
+
+1. Log in as delivery.
+2. Confirm active jobs include:
+   - `40 Corporate Lunch Packs`
+   - `12 Juice Bottles`
+   - `30 Mixed Veg Sandwiches`
+3. Confirm completed jobs include:
+   - `25 Paneer Butter Masala Portions`
+4. Confirm pickup and drop-off map links are built from Bangalore addresses.
+
+Analytics:
+
+1. Log in as NGO.
+2. Open analytics.
+3. Confirm Bangalore-focused activity data appears.
+
+### Build Check
+
+Command:
+
+```bash
+npm run build
+```
+
+Result: Passed on 2026-05-03.

@@ -84,7 +84,7 @@ Chatbot:
 
 Seed and docs:
 
-- `scripts/seed.js`, `scripts/supabase-seed.js`, and `src/lib/seed.ts` still contain London/Covent Garden data.
+- `scripts/seed.js`, `scripts/supabase-seed.js`, and `src/lib/seed.ts` have been updated to Bangalore demo data.
 - Live Supabase data is already partly Bangalore-localized, so the database and local seed scripts are out of sync.
 - Existing docs still use old app branding and include stale schema descriptions.
 
@@ -158,7 +158,7 @@ Seed and docs:
    - Keep this mostly UI copy and metadata only.
 
 3. Phase 3 - Localize demo data and seed scripts for Bangalore.
-   - Replace London data in scripts and docs.
+   - Replace old demo locations in scripts and docs.
    - Build a safe reseed path that is explicit about demo rows.
 
 4. Phase 4 - Add status dropdown.

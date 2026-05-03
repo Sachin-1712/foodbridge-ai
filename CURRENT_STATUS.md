@@ -66,9 +66,27 @@ Phase 2 verification:
 
 - `npm run build` passed.
 
+## Phase 3 Complete: Bangalore Demo Data And Safe Reseed
+
+Demo data has been localized to Bangalore without adding dropdowns, uploads, donation zones, login changes, or UI redesign work.
+
+Phase 3 changes:
+
+- Updated Supabase demo seed data to use Bangalore areas, organizations, addresses, and analytics summaries.
+- Added a safe demo reseed command: `npm run seed:demo`.
+- Kept the current legacy demo login emails in place until Phase 9.
+- Seeded useful examples for `open`, `accepted`, `pickup_assigned`, `in_transit`, `delivered`, and `cancelled` statuses.
+- Added Bangalore delivery jobs and match suggestions so donor, NGO, delivery, and analytics views have meaningful demo data.
+- Updated demo workflow and seeding docs.
+
+Phase 3 verification:
+
+- `npm run seed:demo` passed and recreated 14 profiles, 5 NGO profiles, 9 donations, 8 match suggestions, 4 delivery jobs, and 14 analytics snapshots.
+- Supabase verification confirmed Bangalore donor, NGO, delivery, donation, delivery job, and analytics rows.
+- `npm run build` passed after the reseed/doc updates.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.
 - One pre-existing inconsistent live demo row remains quarantined/documented instead of deleted.
-- Local seed scripts still contain old London demo data; this is planned for Phase 3.
 - No photo upload/storage work was done; this is planned for Phase 6.

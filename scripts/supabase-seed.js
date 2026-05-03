@@ -3,53 +3,227 @@ require('dotenv').config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+  process.exit(1);
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Hardcoded seed data from src/lib/seed.ts, converted to snake_case
+const now = new Date();
+const daysAgo = (d) => new Date(now.getTime() - d * 86400000).toISOString();
+const hoursAgo = (h) => new Date(now.getTime() - h * 3600000).toISOString();
+const hoursFromNow = (h) => new Date(now.getTime() + h * 3600000).toISOString();
+
+const ids = {
+  donors: {
+    koramangala: '11111111-1111-1111-1111-111111111111',
+    indiranagar: '11111111-1111-1111-1111-111111111112',
+    jayanagar: '11111111-1111-1111-1111-111111111113',
+    whitefield: '11111111-1111-1111-1111-111111111114',
+    hsr: '11111111-1111-1111-1111-111111111115',
+    mgRoad: '11111111-1111-1111-1111-111111111116',
+    electronicCity: '11111111-1111-1111-1111-111111111117',
+    malleshwaram: '11111111-1111-1111-1111-111111111118',
+  },
+  ngos: {
+    reliefTrust: '22222222-2222-2222-2222-222222222222',
+    helpingHands: '33333333-3333-3333-3333-333333333333',
+    communityMeals: '22222222-2222-2222-2222-222222222223',
+    hopeShelter: '22222222-2222-2222-2222-222222222224',
+    annadaan: '22222222-2222-2222-2222-222222222225',
+  },
+  delivery: '44444444-4444-4444-4444-444444444444',
+};
+
+const demoUserIds = [
+  ...Object.values(ids.donors),
+  ...Object.values(ids.ngos),
+  ids.delivery,
+];
+
+const legacyDemoUserIds = [
+  'user-donor-1',
+  'user-ngo-1',
+  'user-ngo-2',
+  'user-delivery-1',
+];
+
+const demoDonationOwnerIds = [...demoUserIds, ...legacyDemoUserIds];
+
+const donationIds = {
+  vegBiryani: 'aaaa1111-1111-1111-1111-111111111111',
+  pastries: 'bbbb2222-2222-2222-2222-222222222222',
+  fruitCups: 'cccc3333-3333-3333-3333-333333333333',
+  lunchPacks: 'dddd4444-4444-4444-4444-444444444444',
+  juiceBottles: 'aaaa1111-2222-3333-4444-555555555555',
+  paneer: 'bbbb2222-3333-4444-5555-666666666666',
+  sandwiches: 'cccc3333-4444-5555-6666-777777777777',
+  idliVada: 'dddd4444-5555-6666-7777-888888888888',
+  cancelled: 'eeee5555-6666-7777-8888-999999999999',
+};
+
+const jobIds = {
+  lunchPacks: 'eeee5555-5555-5555-5555-555555555555',
+  juiceBottles: 'ffff6666-6666-6666-6666-666666666666',
+  paneer: '77777777-7777-7777-7777-777777777777',
+  sandwiches: '88888888-8888-8888-8888-888888888888',
+};
 
 const seedUsers = [
   {
-    id: '11111111-1111-1111-1111-111111111111',
-    name: 'Raj Patel',
+    id: ids.donors.koramangala,
+    name: 'Asha Rao',
     email: 'donor@foodbridge.demo',
     password: 'demo123',
     role: 'donor',
-    organization_name: 'Patel Family Restaurant',
-    phone: '+44 20 7123 4567',
-    area: 'Covent Garden, London',
+    organization_name: 'Koramangala Kitchen',
+    phone: '+91 98765 43001',
+    area: 'Koramangala, Bangalore',
     created_at: '2025-11-15T09:00:00Z',
   },
   {
-    id: '22222222-2222-2222-2222-222222222222',
-    name: 'Sarah Mitchell',
+    id: ids.donors.indiranagar,
+    name: 'Nikhil Verma',
+    email: 'donor-indiranagar@sharebite.demo',
+    password: 'demo123',
+    role: 'donor',
+    organization_name: 'Indiranagar Bakery House',
+    phone: '+91 98765 43002',
+    area: 'Indiranagar, Bangalore',
+    created_at: '2025-11-16T09:00:00Z',
+  },
+  {
+    id: ids.donors.jayanagar,
+    name: 'Meera Iyer',
+    email: 'donor-jayanagar@sharebite.demo',
+    password: 'demo123',
+    role: 'donor',
+    organization_name: 'Jayanagar Event Caterers',
+    phone: '+91 98765 43003',
+    area: 'Jayanagar, Bangalore',
+    created_at: '2025-11-17T09:00:00Z',
+  },
+  {
+    id: ids.donors.whitefield,
+    name: 'Arjun Nair',
+    email: 'donor-whitefield@sharebite.demo',
+    password: 'demo123',
+    role: 'donor',
+    organization_name: 'Whitefield Tech Park Canteen',
+    phone: '+91 98765 43004',
+    area: 'Whitefield, Bangalore',
+    created_at: '2025-11-18T09:00:00Z',
+  },
+  {
+    id: ids.donors.hsr,
+    name: 'Divya Prasad',
+    email: 'donor-hsr@sharebite.demo',
+    password: 'demo123',
+    role: 'donor',
+    organization_name: 'HSR Fresh Foods',
+    phone: '+91 98765 43005',
+    area: 'HSR Layout, Bangalore',
+    created_at: '2025-11-19T09:00:00Z',
+  },
+  {
+    id: ids.donors.mgRoad,
+    name: 'Rohan Kapoor',
+    email: 'donor-mgroad@sharebite.demo',
+    password: 'demo123',
+    role: 'donor',
+    organization_name: 'MG Road Cafe',
+    phone: '+91 98765 43006',
+    area: 'MG Road, Bangalore',
+    created_at: '2025-11-20T09:00:00Z',
+  },
+  {
+    id: ids.donors.electronicCity,
+    name: 'Kavya Suresh',
+    email: 'donor-electronic-city@sharebite.demo',
+    password: 'demo123',
+    role: 'donor',
+    organization_name: 'Electronic City Corporate Kitchen',
+    phone: '+91 98765 43007',
+    area: 'Electronic City, Bangalore',
+    created_at: '2025-11-21T09:00:00Z',
+  },
+  {
+    id: ids.donors.malleshwaram,
+    name: 'Srinivas Murthy',
+    email: 'donor-malleshwaram@sharebite.demo',
+    password: 'demo123',
+    role: 'donor',
+    organization_name: 'Malleshwaram Tiffin Centre',
+    phone: '+91 98765 43008',
+    area: 'Malleshwaram, Bangalore',
+    created_at: '2025-11-22T09:00:00Z',
+  },
+  {
+    id: ids.ngos.reliefTrust,
+    name: 'Priya Menon',
     email: 'ngo@foodbridge.demo',
     password: 'demo123',
     role: 'ngo',
-    organization_name: 'City Harvest London',
-    phone: '+44 20 7456 7890',
-    area: 'Bermondsey, London',
+    organization_name: 'Bengaluru Food Relief Trust',
+    phone: '+91 98765 43101',
+    area: 'JP Nagar, Bangalore',
     created_at: '2025-10-01T09:00:00Z',
   },
   {
-    id: '33333333-3333-3333-3333-333333333333',
-    name: 'James Chen',
+    id: ids.ngos.helpingHands,
+    name: 'Ananya Reddy',
     email: 'ngo2@foodbridge.demo',
     password: 'demo123',
     role: 'ngo',
-    organization_name: 'FoodCycle Southwark',
-    phone: '+44 20 7567 8901',
-    area: 'Southwark, London',
+    organization_name: 'Helping Hands Bangalore',
+    phone: '+91 98765 43102',
+    area: 'HSR Layout, Bangalore',
     created_at: '2025-10-10T09:00:00Z',
   },
   {
-    id: '44444444-4444-4444-4444-444444444444',
-    name: 'Marcus Thompson',
+    id: ids.ngos.communityMeals,
+    name: 'Sanjay Kulkarni',
+    email: 'ngo-community@sharebite.demo',
+    password: 'demo123',
+    role: 'ngo',
+    organization_name: 'Community Meals Foundation',
+    phone: '+91 98765 43103',
+    area: 'Marathahalli, Bangalore',
+    created_at: '2025-10-11T09:00:00Z',
+  },
+  {
+    id: ids.ngos.hopeShelter,
+    name: 'Farah Khan',
+    email: 'ngo-hope@sharebite.demo',
+    password: 'demo123',
+    role: 'ngo',
+    organization_name: 'Hope Shelter Network',
+    phone: '+91 98765 43104',
+    area: 'Hebbal, Bangalore',
+    created_at: '2025-10-12T09:00:00Z',
+  },
+  {
+    id: ids.ngos.annadaan,
+    name: 'Ravi Gowda',
+    email: 'ngo-annadaan@sharebite.demo',
+    password: 'demo123',
+    role: 'ngo',
+    organization_name: 'Annadaan Bengaluru',
+    phone: '+91 98765 43105',
+    area: 'Jayanagar, Bangalore',
+    created_at: '2025-10-13T09:00:00Z',
+  },
+  {
+    id: ids.delivery,
+    name: 'Vikram Das',
     email: 'delivery@foodbridge.demo',
     password: 'demo123',
     role: 'delivery',
-    organization_name: 'GreenWheels Logistics',
-    phone: '+44 20 7678 9012',
-    area: 'Central London',
+    organization_name: 'Bangalore Delivery Collective',
+    phone: '+91 98765 43201',
+    area: 'MG Road, Bangalore',
     created_at: '2025-11-01T09:00:00Z',
   },
 ];
@@ -57,168 +231,428 @@ const seedUsers = [
 const seedNGOProfiles = [
   {
     id: '11111111-2222-1111-1111-111111111111',
-    user_id: '22222222-2222-2222-2222-222222222222',
-    name: 'City Harvest London',
-    supported_food_types: JSON.stringify(['cooked_meals', 'bakery', 'fresh_produce', 'packaged', 'dairy']),
-    max_daily_capacity: 200,
-    area: 'Bermondsey, London',
-    latitude: 51.4975,
-    longitude: -0.0799,
-    acceptance_rate: 0.92,
+    user_id: ids.ngos.reliefTrust,
+    name: 'Bengaluru Food Relief Trust',
+    supported_food_types: JSON.stringify(['cooked_meals', 'bakery', 'fresh_produce', 'packaged', 'beverages']),
+    max_daily_capacity: 240,
+    area: 'JP Nagar, Bangalore',
+    latitude: 12.9063,
+    longitude: 77.5857,
+    acceptance_rate: 0.94,
     active_status: true,
   },
   {
     id: '22222222-3333-1111-1111-111111111111',
-    user_id: '33333333-3333-3333-3333-333333333333',
-    name: 'FoodCycle Southwark',
+    user_id: ids.ngos.helpingHands,
+    name: 'Helping Hands Bangalore',
     supported_food_types: JSON.stringify(['cooked_meals', 'fresh_produce', 'bakery']),
-    max_daily_capacity: 80,
-    area: 'Southwark, London',
-    latitude: 51.5035,
-    longitude: -0.0926,
-    acceptance_rate: 0.78,
+    max_daily_capacity: 140,
+    area: 'HSR Layout, Bangalore',
+    latitude: 12.9121,
+    longitude: 77.6446,
+    acceptance_rate: 0.88,
+    active_status: true,
+  },
+  {
+    id: '33333333-4444-1111-1111-111111111111',
+    user_id: ids.ngos.communityMeals,
+    name: 'Community Meals Foundation',
+    supported_food_types: JSON.stringify(['cooked_meals', 'packaged', 'beverages']),
+    max_daily_capacity: 180,
+    area: 'Marathahalli, Bangalore',
+    latitude: 12.9569,
+    longitude: 77.7011,
+    acceptance_rate: 0.86,
+    active_status: true,
+  },
+  {
+    id: '44444444-5555-1111-1111-111111111111',
+    user_id: ids.ngos.hopeShelter,
+    name: 'Hope Shelter Network',
+    supported_food_types: JSON.stringify(['cooked_meals', 'fresh_produce', 'dairy', 'packaged']),
+    max_daily_capacity: 120,
+    area: 'Hebbal, Bangalore',
+    latitude: 13.0358,
+    longitude: 77.5970,
+    acceptance_rate: 0.81,
+    active_status: true,
+  },
+  {
+    id: '55555555-6666-1111-1111-111111111111',
+    user_id: ids.ngos.annadaan,
+    name: 'Annadaan Bengaluru',
+    supported_food_types: JSON.stringify(['cooked_meals', 'bakery', 'fresh_produce', 'beverages']),
+    max_daily_capacity: 160,
+    area: 'Jayanagar, Bangalore',
+    latitude: 12.9250,
+    longitude: 77.5938,
+    acceptance_rate: 0.9,
     active_status: true,
   },
 ];
 
-const now = new Date();
-const daysAgo = (d) => new Date(now.getTime() - d * 86400000).toISOString();
-const hoursAgo = (h) => new Date(now.getTime() - h * 3600000).toISOString();
-const hoursFromNow = (h) => new Date(now.getTime() + h * 3600000).toISOString();
-
 const seedDonations = [
   {
-    id: 'aaaa1111-1111-1111-1111-111111111111',
-    donor_id: '11111111-1111-1111-1111-111111111111',
-    title: '45 Chicken Biryani Portions',
+    id: donationIds.vegBiryani,
+    donor_id: ids.donors.koramangala,
+    title: '35 Veg Biryani Meal Boxes',
     category: 'cooked_meals',
-    food_type: 'Indian Cuisine',
-    quantity: 45,
-    unit: 'portions',
+    food_type: 'Veg biryani',
+    quantity: 35,
+    unit: 'boxes',
     urgency: 'high',
-    prepared_at: hoursAgo(2),
-    expires_at: hoursFromNow(4),
-    pickup_start: hoursAgo(0.5),
-    pickup_end: hoursFromNow(2),
-    location_name: 'Patel Family Restaurant, Covent Garden',
-    latitude: 51.5117,
-    longitude: -0.1240,
-    notes: 'Catering event cancelled. All portions sealed in containers.',
-    is_vegetarian: false,
-    status: 'delivered',
-    accepted_by_ngo_id: '22222222-2222-2222-2222-222222222222',
-    created_at: daysAgo(6),
-  },
-  {
-    id: 'bbbb2222-2222-2222-2222-222222222222',
-    donor_id: '11111111-1111-1111-1111-111111111111',
-    title: '20 Vegetable Samosa Trays',
-    category: 'cooked_meals',
-    food_type: 'Indian Snacks',
-    quantity: 20,
-    unit: 'trays',
-    urgency: 'medium',
-    prepared_at: daysAgo(5),
-    expires_at: daysAgo(4.5),
-    pickup_start: daysAgo(5),
-    pickup_end: daysAgo(4.8),
-    location_name: 'Patel Family Restaurant, Covent Garden',
-    latitude: 51.5117,
-    longitude: -0.1240,
-    notes: 'Fresh vegetable samosas, suitable for reheating.',
-    is_vegetarian: true,
-    status: 'delivered',
-    accepted_by_ngo_id: '33333333-3333-3333-3333-333333333333',
-    created_at: daysAgo(5),
-  },
-  {
-    id: 'cccc3333-3333-3333-3333-333333333333',
-    donor_id: '11111111-1111-1111-1111-111111111111',
-    title: '15kg Fresh Naan Bread',
-    category: 'bakery',
-    food_type: 'Bread',
-    quantity: 15,
-    unit: 'kg',
-    urgency: 'medium',
-    prepared_at: daysAgo(4),
-    expires_at: daysAgo(3.5),
-    pickup_start: daysAgo(4),
-    pickup_end: daysAgo(3.8),
-    location_name: 'Patel Family Restaurant, Covent Garden',
-    latitude: 51.5117,
-    longitude: -0.1240,
-    notes: 'End of day surplus naan bread.',
-    is_vegetarian: true,
-    status: 'delivered',
-    accepted_by_ngo_id: '22222222-2222-2222-2222-222222222222',
-    created_at: daysAgo(4),
-  },
-  {
-    id: 'dddd4444-4444-4444-4444-444444444444',
-    donor_id: '11111111-1111-1111-1111-111111111111',
-    title: '12 Mango Lassi Bottles',
-    category: 'beverages',
-    food_type: 'Beverages',
-    quantity: 12,
-    unit: 'bottles',
-    urgency: 'low',
-    prepared_at: hoursAgo(5),
-    expires_at: hoursFromNow(20),
-    pickup_start: hoursAgo(3),
-    pickup_end: hoursFromNow(5),
-    location_name: 'Patel Family Restaurant, Covent Garden',
-    latitude: 51.5117,
-    longitude: -0.1240,
-    notes: 'Fresh mango lassi, sealed bottles.',
+    prepared_at: hoursAgo(1.5),
+    expires_at: hoursFromNow(3),
+    pickup_start: hoursFromNow(0.25),
+    pickup_end: hoursFromNow(1.5),
+    location_name: 'Koramangala Kitchen, 4th Block, Koramangala, Bangalore',
+    latitude: 12.9352,
+    longitude: 77.6245,
+    notes: 'Fresh vegetarian biryani meal boxes packed after a cancelled lunch order.',
     is_vegetarian: true,
     status: 'open',
-    created_at: hoursAgo(5),
+    accepted_by_ngo_id: null,
+    created_at: hoursAgo(1.5),
+    photo_url: null,
   },
+  {
+    id: donationIds.pastries,
+    donor_id: ids.donors.indiranagar,
+    title: '18 Assorted Pastries',
+    category: 'bakery',
+    food_type: 'Pastries',
+    quantity: 18,
+    unit: 'items',
+    urgency: 'medium',
+    prepared_at: hoursAgo(3),
+    expires_at: hoursFromNow(8),
+    pickup_start: hoursFromNow(1),
+    pickup_end: hoursFromNow(3),
+    location_name: 'Indiranagar Bakery House, 100 Feet Road, Indiranagar, Bangalore',
+    latitude: 12.9784,
+    longitude: 77.6408,
+    notes: 'Assorted eggless and regular pastries from the morning batch.',
+    is_vegetarian: true,
+    status: 'open',
+    accepted_by_ngo_id: null,
+    created_at: hoursAgo(3),
+    photo_url: null,
+  },
+  {
+    id: donationIds.fruitCups,
+    donor_id: ids.donors.hsr,
+    title: '22 Fruit Salad Cups',
+    category: 'fresh_produce',
+    food_type: 'Fruit salad',
+    quantity: 22,
+    unit: 'cups',
+    urgency: 'low',
+    prepared_at: hoursAgo(2),
+    expires_at: hoursFromNow(10),
+    pickup_start: hoursFromNow(2),
+    pickup_end: hoursFromNow(5),
+    location_name: 'HSR Fresh Foods, Sector 2, HSR Layout, Bangalore',
+    latitude: 12.9121,
+    longitude: 77.6446,
+    notes: 'Sealed fruit cups with watermelon, papaya, banana, and grapes.',
+    is_vegetarian: true,
+    status: 'open',
+    accepted_by_ngo_id: null,
+    created_at: hoursAgo(2),
+    photo_url: null,
+  },
+  {
+    id: donationIds.lunchPacks,
+    donor_id: ids.donors.whitefield,
+    title: '40 Corporate Lunch Packs',
+    category: 'packaged',
+    food_type: 'Corporate lunch packs',
+    quantity: 40,
+    unit: 'packs',
+    urgency: 'medium',
+    prepared_at: hoursAgo(4),
+    expires_at: hoursFromNow(4),
+    pickup_start: hoursAgo(0.5),
+    pickup_end: hoursFromNow(1.5),
+    location_name: 'Whitefield Tech Park Canteen, ITPL Main Road, Whitefield, Bangalore',
+    latitude: 12.9698,
+    longitude: 77.7500,
+    notes: 'Packed rice, dal, vegetables, and curd from a reduced-attendance office lunch.',
+    is_vegetarian: true,
+    status: 'accepted',
+    accepted_by_ngo_id: ids.ngos.communityMeals,
+    created_at: hoursAgo(4),
+    photo_url: null,
+  },
+  {
+    id: donationIds.juiceBottles,
+    donor_id: ids.donors.mgRoad,
+    title: '12 Juice Bottles',
+    category: 'beverages',
+    food_type: 'Fresh juice',
+    quantity: 12,
+    unit: 'bottles',
+    urgency: 'medium',
+    prepared_at: hoursAgo(2.5),
+    expires_at: hoursFromNow(6),
+    pickup_start: hoursAgo(1),
+    pickup_end: hoursFromNow(1),
+    location_name: 'MG Road Cafe, Church Street, MG Road, Bangalore',
+    latitude: 12.9758,
+    longitude: 77.6068,
+    notes: 'Sealed orange and watermelon juice bottles from the evening batch.',
+    is_vegetarian: true,
+    status: 'in_transit',
+    accepted_by_ngo_id: ids.ngos.reliefTrust,
+    created_at: hoursAgo(2.5),
+    photo_url: null,
+  },
+  {
+    id: donationIds.paneer,
+    donor_id: ids.donors.jayanagar,
+    title: '25 Paneer Butter Masala Portions',
+    category: 'cooked_meals',
+    food_type: 'Paneer curry',
+    quantity: 25,
+    unit: 'portions',
+    urgency: 'medium',
+    prepared_at: daysAgo(1),
+    expires_at: hoursFromNow(2),
+    pickup_start: daysAgo(1),
+    pickup_end: daysAgo(0.9),
+    location_name: 'Jayanagar Event Caterers, 4th Block, Jayanagar, Bangalore',
+    latitude: 12.9250,
+    longitude: 77.5938,
+    notes: 'Delivered from a small family function. Vegetarian curry packed in containers.',
+    is_vegetarian: true,
+    status: 'delivered',
+    accepted_by_ngo_id: ids.ngos.annadaan,
+    created_at: daysAgo(1),
+    photo_url: null,
+  },
+  {
+    id: donationIds.sandwiches,
+    donor_id: ids.donors.electronicCity,
+    title: '30 Mixed Veg Sandwiches',
+    category: 'packaged',
+    food_type: 'Vegetable sandwiches',
+    quantity: 30,
+    unit: 'sandwiches',
+    urgency: 'medium',
+    prepared_at: hoursAgo(3.5),
+    expires_at: hoursFromNow(5),
+    pickup_start: hoursFromNow(0.5),
+    pickup_end: hoursFromNow(2),
+    location_name: 'Electronic City Corporate Kitchen, Phase 1, Electronic City, Bangalore',
+    latitude: 12.8452,
+    longitude: 77.6602,
+    notes: 'Individually wrapped veg sandwiches from a corporate training event.',
+    is_vegetarian: true,
+    status: 'pickup_assigned',
+    accepted_by_ngo_id: ids.ngos.helpingHands,
+    created_at: hoursAgo(3.5),
+    photo_url: null,
+  },
+  {
+    id: donationIds.idliVada,
+    donor_id: ids.donors.malleshwaram,
+    title: '15 Idli Vada Breakfast Packs',
+    category: 'cooked_meals',
+    food_type: 'Breakfast packs',
+    quantity: 15,
+    unit: 'packs',
+    urgency: 'low',
+    prepared_at: hoursAgo(1),
+    expires_at: hoursFromNow(4),
+    pickup_start: hoursFromNow(0.5),
+    pickup_end: hoursFromNow(2.5),
+    location_name: 'Malleshwaram Tiffin Centre, 8th Cross, Malleshwaram, Bangalore',
+    latitude: 13.0031,
+    longitude: 77.5643,
+    notes: 'Idli, vada, and chutney breakfast packs. Best consumed today.',
+    is_vegetarian: true,
+    status: 'open',
+    accepted_by_ngo_id: null,
+    created_at: hoursAgo(1),
+    photo_url: null,
+  },
+  {
+    id: donationIds.cancelled,
+    donor_id: ids.donors.koramangala,
+    title: '10 Lemon Rice Packs',
+    category: 'cooked_meals',
+    food_type: 'Lemon rice',
+    quantity: 10,
+    unit: 'packs',
+    urgency: 'low',
+    prepared_at: daysAgo(2),
+    expires_at: daysAgo(1.8),
+    pickup_start: daysAgo(2),
+    pickup_end: daysAgo(1.9),
+    location_name: 'Koramangala Kitchen, 4th Block, Koramangala, Bangalore',
+    latitude: 12.9352,
+    longitude: 77.6245,
+    notes: 'Cancelled during demo reset because pickup window expired.',
+    is_vegetarian: true,
+    status: 'cancelled',
+    accepted_by_ngo_id: null,
+    created_at: daysAgo(2),
+    photo_url: null,
+  },
+];
+
+const seedMatchSuggestions = [
+  { id: '99990000-0000-0000-0000-000000000001', donation_id: donationIds.vegBiryani, ngo_id: ids.ngos.reliefTrust, score: 96, reason: 'Strong Bangalore match: urgent cooked meals, high capacity, and reliable response from JP Nagar.', rank: 1 },
+  { id: '99990000-0000-0000-0000-000000000002', donation_id: donationIds.vegBiryani, ngo_id: ids.ngos.annadaan, score: 91, reason: 'Good nearby option in Jayanagar with cooked meal capacity.', rank: 2 },
+  { id: '99990000-0000-0000-0000-000000000003', donation_id: donationIds.pastries, ngo_id: ids.ngos.helpingHands, score: 88, reason: 'Accepts bakery items and is close to Indiranagar via HSR Layout.', rank: 1 },
+  { id: '99990000-0000-0000-0000-000000000004', donation_id: donationIds.pastries, ngo_id: ids.ngos.reliefTrust, score: 84, reason: 'High capacity and bakery support for same-day pickup.', rank: 2 },
+  { id: '99990000-0000-0000-0000-000000000005', donation_id: donationIds.fruitCups, ngo_id: ids.ngos.hopeShelter, score: 82, reason: 'Fresh produce support and available afternoon capacity.', rank: 1 },
+  { id: '99990000-0000-0000-0000-000000000006', donation_id: donationIds.fruitCups, ngo_id: ids.ngos.annadaan, score: 80, reason: 'Good vegetarian food fit and reasonable pickup distance.', rank: 2 },
+  { id: '99990000-0000-0000-0000-000000000007', donation_id: donationIds.idliVada, ngo_id: ids.ngos.annadaan, score: 93, reason: 'Breakfast packs fit the Jayanagar meal program and can be collected quickly.', rank: 1 },
+  { id: '99990000-0000-0000-0000-000000000008', donation_id: donationIds.idliVada, ngo_id: ids.ngos.reliefTrust, score: 86, reason: 'High capacity for cooked meal packs with reliable response.', rank: 2 },
 ];
 
 const seedDeliveryJobs = [
   {
-    id: 'eeee5555-5555-5555-5555-555555555555',
-    donation_id: 'aaaa1111-1111-1111-1111-111111111111',
-    donor_id: '11111111-1111-1111-1111-111111111111',
-    ngo_id: '22222222-2222-2222-2222-222222222222',
-    delivery_partner_id: '44444444-4444-4444-4444-444444444444',
-    pickup_address: 'Patel Family Restaurant, Covent Garden, London WC2E 8RF',
-    drop_address: 'City Harvest London, Bermondsey, London SE1 3UW',
-    eta_minutes: 22,
-    distance_km: 4.8,
-    status: 'delivered',
-    donation_title: '45 Chicken Biryani Portions',
-    created_at: daysAgo(6),
-    updated_at: daysAgo(5.8),
+    id: jobIds.lunchPacks,
+    donation_id: donationIds.lunchPacks,
+    donor_id: ids.donors.whitefield,
+    ngo_id: ids.ngos.communityMeals,
+    delivery_partner_id: ids.delivery,
+    pickup_address: 'Whitefield Tech Park Canteen, ITPL Main Road, Whitefield, Bangalore',
+    drop_address: 'Community Meals Foundation, Marathahalli, Bangalore',
+    eta_minutes: 24,
+    distance_km: 7.4,
+    status: 'assigned',
+    donation_title: '40 Corporate Lunch Packs',
+    created_at: hoursAgo(3.5),
+    updated_at: hoursAgo(3.5),
   },
   {
-    id: 'ffff6666-6666-6666-6666-666666666666',
-    donation_id: 'bbbb2222-2222-2222-2222-222222222222',
-    donor_id: '11111111-1111-1111-1111-111111111111',
-    ngo_id: '33333333-3333-3333-3333-333333333333',
-    delivery_partner_id: '44444444-4444-4444-4444-444444444444',
-    pickup_address: 'Patel Family Restaurant, Covent Garden, London WC2E 8RF',
-    drop_address: 'FoodCycle Southwark, London SE1 1TL',
-    eta_minutes: 18,
-    distance_km: 3.2,
+    id: jobIds.juiceBottles,
+    donation_id: donationIds.juiceBottles,
+    donor_id: ids.donors.mgRoad,
+    ngo_id: ids.ngos.reliefTrust,
+    delivery_partner_id: ids.delivery,
+    pickup_address: 'MG Road Cafe, Church Street, MG Road, Bangalore',
+    drop_address: 'Bengaluru Food Relief Trust, JP Nagar, Bangalore',
+    eta_minutes: 20,
+    distance_km: 8.1,
+    status: 'in_transit',
+    donation_title: '12 Juice Bottles',
+    created_at: hoursAgo(2),
+    updated_at: hoursAgo(0.5),
+  },
+  {
+    id: jobIds.paneer,
+    donation_id: donationIds.paneer,
+    donor_id: ids.donors.jayanagar,
+    ngo_id: ids.ngos.annadaan,
+    delivery_partner_id: ids.delivery,
+    pickup_address: 'Jayanagar Event Caterers, 4th Block, Jayanagar, Bangalore',
+    drop_address: 'Annadaan Bengaluru, Jayanagar, Bangalore',
+    eta_minutes: 14,
+    distance_km: 2.6,
     status: 'delivered',
-    donation_title: '20 Vegetable Samosa Trays',
-    created_at: daysAgo(5),
-    updated_at: daysAgo(4.7),
-  }
+    donation_title: '25 Paneer Butter Masala Portions',
+    created_at: daysAgo(1),
+    updated_at: hoursAgo(18),
+  },
+  {
+    id: jobIds.sandwiches,
+    donation_id: donationIds.sandwiches,
+    donor_id: ids.donors.electronicCity,
+    ngo_id: ids.ngos.helpingHands,
+    delivery_partner_id: ids.delivery,
+    pickup_address: 'Electronic City Corporate Kitchen, Phase 1, Electronic City, Bangalore',
+    drop_address: 'Helping Hands Bangalore, HSR Layout, Bangalore',
+    eta_minutes: 28,
+    distance_km: 10.3,
+    status: 'assigned',
+    donation_title: '30 Mixed Veg Sandwiches',
+    created_at: hoursAgo(3),
+    updated_at: hoursAgo(3),
+  },
 ];
 
-async function seed() {
-  console.log("Seeding profiles...");
-  await supabase.from('profiles').insert(seedUsers);
-  console.log("Seeding NGO profiles...");
-  await supabase.from('ngo_profiles').insert(seedNGOProfiles);
-  console.log("Seeding donations...");
-  await supabase.from('donations').insert(seedDonations);
-  console.log("Seeding delivery jobs...");
-  await supabase.from('delivery_jobs').insert(seedDeliveryJobs);
-  console.log("Done!");
+const seedAnalytics = Array.from({ length: 14 }, (_, i) => {
+  const categories = ['cooked_meals', 'bakery', 'fresh_produce', 'packaged'];
+  return {
+    id: `77770000-0000-0000-0000-${String(i + 1).padStart(12, '0')}`,
+    ngo_id: ids.ngos.reliefTrust,
+    date: daysAgo(13 - i),
+    donations_received: [2, 3, 4, 3, 5, 4, 6, 3, 4, 5, 4, 6, 5, 7][i],
+    meals_rescued: [45, 62, 80, 58, 95, 76, 110, 64, 82, 105, 92, 120, 108, 132][i],
+    avg_acceptance_time: [14, 13, 12, 15, 11, 12, 10, 14, 13, 11, 10, 9, 10, 8][i],
+    top_category: categories[i % categories.length],
+    summary_text: 'Bangalore demo data: Koramangala, Indiranagar, and Whitefield are active donation areas this week.',
+  };
+});
+
+async function deleteByIds(table, column, values) {
+  if (!values.length) return;
+  const { error } = await supabase.from(table).delete().in(column, values);
+  if (error) throw new Error(`Failed deleting ${table}: ${error.message}`);
 }
 
-seed().catch(console.error);
+async function getExistingDemoDonationIds() {
+  const { data, error } = await supabase
+    .from('donations')
+    .select('id, donor_id, accepted_by_ngo_id, title');
+
+  if (error) throw new Error(`Failed reading donations: ${error.message}`);
+
+  const userIds = new Set(demoDonationOwnerIds);
+  return (data || [])
+    .filter((row) => userIds.has(row.donor_id) || userIds.has(row.accepted_by_ngo_id) || row.title?.startsWith('Phase 1 Workflow Test'))
+    .map((row) => row.id);
+}
+
+async function getExistingDemoJobIds(donationIdsToDelete) {
+  const { data, error } = await supabase
+    .from('delivery_jobs')
+    .select('id, donation_id, donor_id, ngo_id, delivery_partner_id');
+
+  if (error) throw new Error(`Failed reading delivery jobs: ${error.message}`);
+
+  const userIds = new Set(demoDonationOwnerIds);
+  const donationSet = new Set(donationIdsToDelete);
+  return (data || [])
+    .filter((row) => donationSet.has(row.donation_id) || userIds.has(row.donor_id) || userIds.has(row.ngo_id) || userIds.has(row.delivery_partner_id))
+    .map((row) => row.id);
+}
+
+async function resetDemoData() {
+  console.log('Resetting demo-only Supabase rows...');
+  const existingDonationIds = await getExistingDemoDonationIds();
+  const existingJobIds = await getExistingDemoJobIds(existingDonationIds);
+
+  await deleteByIds('match_suggestions', 'donation_id', existingDonationIds);
+  await deleteByIds('delivery_jobs', 'id', existingJobIds);
+  await deleteByIds('analytics_snapshots', 'ngo_id', Object.values(ids.ngos));
+  await deleteByIds('donations', 'id', existingDonationIds);
+  await deleteByIds('ngo_profiles', 'user_id', Object.values(ids.ngos));
+  await deleteByIds('profiles', 'id', demoUserIds);
+}
+
+async function upsert(table, rows) {
+  const { error } = await supabase.from(table).upsert(rows);
+  if (error) throw new Error(`Failed seeding ${table}: ${error.message}`);
+  console.log(`Seeded ${table}: ${rows.length}`);
+}
+
+async function seed() {
+  await resetDemoData();
+  await upsert('profiles', seedUsers);
+  await upsert('ngo_profiles', seedNGOProfiles);
+  await upsert('donations', seedDonations);
+  await upsert('match_suggestions', seedMatchSuggestions);
+  await upsert('delivery_jobs', seedDeliveryJobs);
+  await upsert('analytics_snapshots', seedAnalytics);
+  console.log('Bangalore demo reseed complete.');
+}
+
+seed().catch((error) => {
+  console.error(error.message || error);
+  process.exit(1);
+});

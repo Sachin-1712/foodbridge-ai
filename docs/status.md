@@ -5,7 +5,7 @@
 ### 1. Core Workflow Stabilization
 - **Donor → NGO → Delivery Flow**: Fully integrated the end-to-end flow. 
   - Donor creation now correctly uses UUIDs.
-  - NGO acceptance now triggers a `delivery_jobs` entry linked to the demo delivery partner (Marcus Thompson).
+  - NGO acceptance now triggers a `delivery_jobs` entry linked to the demo delivery partner.
   - Delivery status updates now bidirectionally sync with the `donations` status table.
 - **Demo-Friendly Sync**: Implemented a `RevalidationTimer` component that triggers `router.refresh()` periodically (10-15s) across all dashboards to ensure cross-role state consistency without requiring manual page refreshes.
 
