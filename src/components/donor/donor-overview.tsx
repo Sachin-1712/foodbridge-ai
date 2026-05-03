@@ -1,12 +1,33 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Donation, AnalyticsSnapshot } from '@/types';
+import { toast } from 'sonner';
 import {
   Package,
   Utensils,
@@ -22,6 +43,9 @@ import {
   Heart,
   Zap,
   ArrowRight,
+  Edit3,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
 import {
   BarChart,
@@ -46,6 +70,42 @@ interface DonorOverviewProps {
   analytics?: AnalyticsSnapshot[];
   donorName: string;
 }
+
+const editableStatuses = ['open', 'accepted', 'pickup_assigned'];
+
+const categories = [
+  { value: 'cooked_meals', label: 'Cooked Meals' },
+  { value: 'bakery', label: 'Bakery' },
+  { value: 'fresh_produce', label: 'Fresh Produce' },
+  { value: 'packaged', label: 'Packaged' },
+  { value: 'dairy', label: 'Dairy' },
+  { value: 'beverages', label: 'Beverages' },
+  { value: 'other', label: 'Other' },
+];
+
+const urgencyLevels = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'Urgent' },
+];
+
+const units = ['kg', 'portions', 'litres', 'items', 'boxes', 'packs', 'cups', 'bottles', 'sandwiches'];
+
+const isoToTime = (value: string) => value?.slice(11, 16) || '';
+
+const createEditForm = (donation: Donation) => ({
+  title: donation.title,
+  category: donation.category,
+  foodType: donation.foodType,
+  quantity: String(donation.quantity),
+  unit: donation.unit,
+  urgency: donation.urgency,
+  locationName: donation.locationName,
+  pickupStart: isoToTime(donation.pickupStart),
+  pickupEnd: isoToTime(donation.pickupEnd),
+  notes: donation.notes,
+  isVegetarian: donation.isVegetarian,
+});
 
 const KPICard = ({ 
   label, 
@@ -84,12 +144,83 @@ const KPICard = ({
 export function DonorOverview({ stats, recentDonations, analytics = [], donorName }: DonorOverviewProps) {
   const router = useRouter();
   const firstName = donorName.split(' ')[0];
+  const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
+  const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
+  const [editForm, setEditForm] = useState<ReturnType<typeof createEditForm> | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const chartData = analytics.map((a) => ({
     date: new Date(a.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
     donations: a.donationsReceived,
     meals: a.mealsRescued,
   }));
+
+  const openEditDialog = (donation: Donation) => {
+    setEditingDonation(donation);
+    setEditForm(createEditForm(donation));
+  };
+
+  const updateEditForm = (field: keyof NonNullable<typeof editForm>, value: string | boolean) => {
+    setEditForm((prev) => prev ? { ...prev, [field]: value } : prev);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingDonation || !editForm) return;
+    setSaving(true);
+
+    try {
+      const res = await fetch('/api/donations', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          donationId: editingDonation.id,
+          donation: {
+            ...editForm,
+            quantity: Number(editForm.quantity),
+          },
+        }),
+      });
+
+      if (res.ok) {
+        toast.success('Donation updated');
+        setEditingDonation(null);
+        setEditForm(null);
+        router.refresh();
+      } else {
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error || 'Unable to update donation');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteDonation) return;
+    setDeleting(true);
+
+    try {
+      const res = await fetch(`/api/donations?donationId=${encodeURIComponent(deleteDonation.id)}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        toast.success('Donation deleted');
+        setDeleteDonation(null);
+        router.refresh();
+      } else {
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error || 'Unable to delete donation');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-8 pb-10">
@@ -258,31 +389,60 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
                   <p className="text-[10px] mt-2 font-medium">Create a new donation to begin.</p>
                 </div>
               ) : (
-                recentDonations.slice(0, 8).map((d) => (
-                  <div
-                    key={d.id}
-                    className="flex items-center gap-4 p-5 rounded-3xl bg-fb-surface-container-lowest border border-transparent hover:border-fb-outline-variant/10 hover:shadow-md transition-all duration-300 group"
-                  >
-                    <div className="w-12 h-12 rounded-2xl bg-fb-surface-container flex items-center justify-center text-fb-primary transition-transform group-hover:scale-110">
-                      <Package className="w-6 h-6" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-fb-on-surface truncate group-hover:text-fb-primary transition-colors">{d.title}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-[10px] font-black text-fb-on-surface-variant uppercase">{d.quantity} {d.unit}</span>
-                        <Separator orientation="vertical" className="h-2.5 bg-fb-outline-variant/30" />
-                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-fb-on-surface-variant/60">
-                          <MapPin className="w-3 h-3" />
-                          {d.locationName}
-                        </span>
+                recentDonations.slice(0, 8).map((d) => {
+                  const canManage = editableStatuses.includes(d.status);
+
+                  return (
+                    <div
+                      key={d.id}
+                      className="flex items-center gap-4 p-5 rounded-3xl bg-fb-surface-container-lowest border border-transparent hover:border-fb-outline-variant/10 hover:shadow-md transition-all duration-300 group"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-fb-surface-container flex items-center justify-center text-fb-primary transition-transform group-hover:scale-110">
+                        <Package className="w-6 h-6" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-black text-fb-on-surface truncate group-hover:text-fb-primary transition-colors">{d.title}</p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-[10px] font-black text-fb-on-surface-variant uppercase">{d.quantity} {d.unit}</span>
+                          <Separator orientation="vertical" className="h-2.5 bg-fb-outline-variant/30" />
+                          <span className="flex items-center gap-1.5 text-[10px] font-bold text-fb-on-surface-variant/60 truncate">
+                            <MapPin className="w-3 h-3 shrink-0" />
+                            {d.locationName}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <StatusBadge status={d.status} className="h-5 text-[8px] font-black px-2 py-0 border-none" />
+                        {canManage ? (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-xs"
+                              className="rounded-lg text-fb-on-surface-variant hover:text-fb-primary"
+                              onClick={() => openEditDialog(d)}
+                              aria-label={`Edit ${d.title}`}
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-xs"
+                              className="rounded-lg text-fb-on-surface-variant hover:text-fb-error"
+                              onClick={() => setDeleteDonation(d)}
+                              aria-label={`Delete ${d.title}`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-[8px] font-black text-fb-on-surface-variant/40 uppercase tracking-widest">Locked</span>
+                        )}
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <StatusBadge status={d.status} className="h-5 text-[8px] font-black px-2 py-0 border-none" />
-                      <ArrowRight className="w-4 h-4 text-fb-outline-variant opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
             
@@ -298,6 +458,143 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
           </Card>
         </div>
       </div>
+
+      <Dialog open={!!editingDonation} onOpenChange={(open) => {
+        if (!open) {
+          setEditingDonation(null);
+          setEditForm(null);
+        }
+      }}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[2rem] bg-white p-0 sm:max-w-3xl">
+          <DialogHeader className="border-b border-fb-outline-variant/10 p-6">
+            <DialogTitle className="text-xl font-black text-fb-on-surface">Edit Donation</DialogTitle>
+            <DialogDescription>
+              Donors can edit donations until pickup starts.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editForm && (
+            <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Title</Label>
+                <Input value={editForm.title} onChange={(e) => updateEditForm('title', e.target.value)} className="h-12 rounded-2xl bg-fb-surface-container-low font-bold" />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Category</Label>
+                <Select value={editForm.category} onValueChange={(value) => updateEditForm('category', value)}>
+                  <SelectTrigger className="h-12 rounded-2xl bg-fb-surface-container-low font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl">
+                    {categories.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>{category.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Food Type</Label>
+                <Input value={editForm.foodType} onChange={(e) => updateEditForm('foodType', e.target.value)} className="h-12 rounded-2xl bg-fb-surface-container-low font-bold" />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Quantity</Label>
+                <Input type="number" min={1} value={editForm.quantity} onChange={(e) => updateEditForm('quantity', e.target.value)} className="h-12 rounded-2xl bg-fb-surface-container-low font-bold" />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Unit</Label>
+                <Select value={editForm.unit} onValueChange={(value) => updateEditForm('unit', value)}>
+                  <SelectTrigger className="h-12 rounded-2xl bg-fb-surface-container-low font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl">
+                    {units.map((unit) => (
+                      <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Urgency</Label>
+                <Select value={editForm.urgency} onValueChange={(value) => updateEditForm('urgency', value)}>
+                  <SelectTrigger className="h-12 rounded-2xl bg-fb-surface-container-low font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl">
+                    {urgencyLevels.map((urgency) => (
+                      <SelectItem key={urgency.value} value={urgency.value}>{urgency.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Vegetarian</Label>
+                <div className="flex h-12 items-center justify-between rounded-2xl bg-fb-surface-container-low px-4">
+                  <span className="text-xs font-bold text-fb-on-surface-variant">Vegetarian Food</span>
+                  <Switch checked={editForm.isVegetarian} onCheckedChange={(value) => updateEditForm('isVegetarian', value)} className="data-[state=checked]:bg-fb-primary" />
+                </div>
+              </div>
+
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Pickup Location</Label>
+                <Input value={editForm.locationName} onChange={(e) => updateEditForm('locationName', e.target.value)} className="h-12 rounded-2xl bg-fb-surface-container-low font-bold" />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Pickup Start</Label>
+                <Input type="time" value={editForm.pickupStart} onChange={(e) => updateEditForm('pickupStart', e.target.value)} className="h-12 rounded-2xl bg-fb-surface-container-low font-bold" />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Pickup End</Label>
+                <Input type="time" value={editForm.pickupEnd} onChange={(e) => updateEditForm('pickupEnd', e.target.value)} className="h-12 rounded-2xl bg-fb-surface-container-low font-bold" />
+              </div>
+
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Notes</Label>
+                <Textarea value={editForm.notes} onChange={(e) => updateEditForm('notes', e.target.value)} rows={4} className="rounded-[1.5rem] bg-fb-surface-container-low font-medium" />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="rounded-b-[2rem] border-t border-fb-outline-variant/10 bg-fb-surface-container-lowest p-6">
+            <Button variant="outline" className="h-11 rounded-2xl" onClick={() => setEditingDonation(null)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button className="h-11 rounded-2xl bg-fb-primary px-6 text-white" onClick={handleSaveEdit} disabled={saving || !editForm?.title || !editForm?.quantity}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteDonation} onOpenChange={(open) => !open && setDeleteDonation(null)}>
+        <DialogContent className="rounded-[2rem] bg-white p-6 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-fb-on-surface">Delete Donation?</DialogTitle>
+            <DialogDescription>
+              This removes the donation from donor, NGO, and delivery views. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-2xl bg-fb-surface-container-low p-4">
+            <p className="text-sm font-black text-fb-on-surface">{deleteDonation?.title}</p>
+            <p className="mt-1 text-xs font-bold text-fb-on-surface-variant">{deleteDonation?.quantity} {deleteDonation?.unit}</p>
+          </div>
+          <DialogFooter className="mt-2 rounded-b-none border-t-0 bg-transparent p-0">
+            <Button variant="outline" className="h-11 rounded-2xl" onClick={() => setDeleteDonation(null)} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" className="h-11 rounded-2xl px-6" onClick={handleDelete} disabled={deleting}>
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

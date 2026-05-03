@@ -185,3 +185,39 @@ npm run build
 ```
 
 Result: Passed on 2026-05-03.
+
+## Phase 5 Donor Edit/Delete Test
+
+Purpose: verify donors can edit or delete only their own pre-pickup donations, and that protected statuses are blocked.
+
+Local app URL used: `http://localhost:3000`
+
+Validated checks:
+
+- Donor created a fresh open donation:
+  - `Phase 5 Editable Test`
+- Donor edited the open donation:
+  - Title changed to `Phase 5 Edited Test`
+  - Quantity changed to `11`
+  - Pickup location changed to a Bangalore address
+- Donor deleted the edited open donation.
+- Deleted donation no longer appeared in donor API view.
+- Wrong donor edit attempt returned `403`.
+- Locked status attempts returned `409`:
+  - `picked_up`
+  - `in_transit`
+  - `delivered`
+  - `cancelled`
+- Pickup-assigned edit propagation was tested on `30 Mixed Veg Sandwiches`:
+  - NGO API view reflected the edited title and quantity.
+  - Delivery API view reflected the edited title and pickup address.
+  - Seeded donation was restored afterward.
+- `npm run seed:demo` was run after tests to restore the Bangalore demo baseline.
+
+Build check:
+
+```bash
+npm run build
+```
+
+Result: Passed on 2026-05-04.

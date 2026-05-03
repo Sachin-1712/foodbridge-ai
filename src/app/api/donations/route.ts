@@ -6,6 +6,7 @@ import {
   getDonationsByDonor,
   getOpenDonations,
   updateDonationStatus,
+  updateDonationDetails,
   getDonationById,
   generateMatchSuggestions,
   getMatchesForDonation,
@@ -16,8 +17,31 @@ import {
   getFirstDeliveryPartner,
   getJobByDonationId,
   updateDeliveryJobForDonation,
+  updateDeliveryJobDonationDetails,
+  deleteDonationCascade,
 } from '@/lib/store';
 import { DeliveryJob, Donation } from '@/types';
+
+const donorEditableStatuses: Donation['status'][] = ['open', 'accepted', 'pickup_assigned'];
+
+const timeToISO = (timeStr: string | undefined, fallbackISO?: string, hoursOffset = 0) => {
+  if (!timeStr) {
+    return fallbackISO || new Date(Date.now() + hoursOffset * 3600000).toISOString();
+  }
+
+  if (timeStr.includes('T')) {
+    return new Date(timeStr).toISOString();
+  }
+
+  if (!timeStr.includes(':')) {
+    return fallbackISO || new Date(Date.now() + hoursOffset * 3600000).toISOString();
+  }
+
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const base = fallbackISO ? new Date(fallbackISO) : new Date();
+  base.setHours(hours, minutes, 0, 0);
+  return base.toISOString();
+};
 
 export async function GET(request: NextRequest) {
   const user = await getSession();
@@ -81,17 +105,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Only donors can create donations' }, { status: 403 });
     }
 
-    // Helper to convert HH:MM to ISO timestamp for today
-    const timeToISO = (timeStr: string | undefined, hoursOffset = 0) => {
-      if (!timeStr || !timeStr.includes(':')) {
-        return new Date(Date.now() + hoursOffset * 3600000).toISOString();
-      }
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      const d = new Date();
-      d.setHours(hours, minutes, 0, 0);
-      return d.toISOString();
-    };
-
     const donation: Donation = {
       id: crypto.randomUUID(),
       donorId: user.id,
@@ -102,9 +115,9 @@ export async function POST(request: NextRequest) {
       unit: body.donation.unit,
       urgency: body.donation.urgency,
       preparedAt: timeToISO(body.donation.preparedAt),
-      expiresAt: timeToISO(body.donation.expiresAt, 6), // Default 6h if missing
+      expiresAt: timeToISO(body.donation.expiresAt, undefined, 6), // Default 6h if missing
       pickupStart: timeToISO(body.donation.pickupStart),
-      pickupEnd: timeToISO(body.donation.pickupEnd, 3),   // Default 3h if missing
+      pickupEnd: timeToISO(body.donation.pickupEnd, undefined, 3),   // Default 3h if missing
       locationName: body.donation.locationName || user.area,
       latitude: body.donation.latitude || 51.5117,
       longitude: body.donation.longitude || -0.124,
@@ -187,4 +200,99 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+}
+
+export async function PATCH(request: NextRequest) {
+  const user = await getSession();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  if (user.role !== 'donor') {
+    return NextResponse.json({ error: 'Only donors can edit donations' }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const donation = await getDonationById(body.donationId);
+
+  if (!donation) {
+    return NextResponse.json({ error: 'Donation not found' }, { status: 404 });
+  }
+
+  if (donation.donorId !== user.id) {
+    return NextResponse.json({ error: 'You can only edit your own donations' }, { status: 403 });
+  }
+
+  if (!donorEditableStatuses.includes(donation.status)) {
+    return NextResponse.json(
+      { error: 'Donation can no longer be edited because pickup has started or it is closed' },
+      { status: 409 }
+    );
+  }
+
+  const edited = await updateDonationDetails(donation.id, {
+    title: body.donation.title,
+    category: body.donation.category,
+    foodType: body.donation.foodType,
+    quantity: Number(body.donation.quantity),
+    unit: body.donation.unit,
+    urgency: body.donation.urgency,
+    pickupStart: timeToISO(body.donation.pickupStart, donation.pickupStart),
+    pickupEnd: timeToISO(body.donation.pickupEnd, donation.pickupEnd),
+    locationName: body.donation.locationName || donation.locationName,
+    notes: body.donation.notes || '',
+    isVegetarian: Boolean(body.donation.isVegetarian),
+  });
+
+  if (!edited) {
+    return NextResponse.json({ error: 'Unable to update donation' }, { status: 500 });
+  }
+
+  await updateDeliveryJobDonationDetails(edited.id, {
+    pickupAddress: edited.locationName,
+    donationTitle: edited.title,
+  });
+
+  return NextResponse.json({ donation: edited });
+}
+
+export async function DELETE(request: NextRequest) {
+  const user = await getSession();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  if (user.role !== 'donor') {
+    return NextResponse.json({ error: 'Only donors can delete donations' }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const donationId = searchParams.get('donationId');
+
+  if (!donationId) {
+    return NextResponse.json({ error: 'donationId is required' }, { status: 400 });
+  }
+
+  const donation = await getDonationById(donationId);
+  if (!donation) {
+    return NextResponse.json({ error: 'Donation not found' }, { status: 404 });
+  }
+
+  if (donation.donorId !== user.id) {
+    return NextResponse.json({ error: 'You can only delete your own donations' }, { status: 403 });
+  }
+
+  if (!donorEditableStatuses.includes(donation.status)) {
+    return NextResponse.json(
+      { error: 'Donation can no longer be deleted because pickup has started or it is closed' },
+      { status: 409 }
+    );
+  }
+
+  const deleted = await deleteDonationCascade(donation.id);
+  if (!deleted) {
+    return NextResponse.json({ error: 'Unable to delete donation' }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
 }

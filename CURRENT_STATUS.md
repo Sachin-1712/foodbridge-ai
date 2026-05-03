@@ -119,6 +119,41 @@ Phase 4 verification:
 - Test job was restored to `assigned`; related donation is back to `pickup_assigned`.
 - `npm run build` passed.
 
+## Phase 5 Complete: Donor Edit And Delete Before Pickup
+
+Donors can now edit or delete their own donations only before pickup starts.
+
+Phase 5 changes:
+
+- Added donor card actions for eligible donations.
+- Added an edit dialog for:
+  - title
+  - category
+  - food type
+  - quantity
+  - unit
+  - urgency
+  - pickup location
+  - pickup window
+  - notes
+  - vegetarian flag
+- Added delete confirmation dialog.
+- Added donor-only PATCH and DELETE checks in `/api/donations`.
+- Enforced ownership checks so donors cannot edit or delete another donor's donation.
+- Allowed edit/delete statuses: `open`, `accepted`, `pickup_assigned`.
+- Blocked edit/delete statuses: `picked_up`, `in_transit`, `delivered`, `cancelled`.
+- Synced edited donation title and pickup address to any related delivery job.
+- Deleted related match suggestions and delivery jobs before deleting a donation.
+
+Phase 5 verification:
+
+- Donor created, edited, and deleted a fresh open donation.
+- Wrong donor edit attempt was blocked with `403`.
+- `picked_up`, `in_transit`, `delivered`, and `cancelled` edit/delete attempts were blocked with `409`.
+- Edited a `pickup_assigned` donation and confirmed NGO and delivery API views reflected the new title/location.
+- Restored the edited seeded donation, then ran `npm run seed:demo` to return Supabase to the Bangalore demo baseline.
+- `npm run build` passed.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.

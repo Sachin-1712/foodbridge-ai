@@ -200,6 +200,28 @@ export async function updateDonationStatus(
   return mapDonation(data);
 }
 
+export async function updateDonationDetails(
+  id: string,
+  updates: Pick<Donation, 'title' | 'category' | 'foodType' | 'quantity' | 'unit' | 'urgency' | 'pickupStart' | 'pickupEnd' | 'locationName' | 'notes' | 'isVegetarian'>
+): Promise<Donation | undefined> {
+  const { data, error } = await supabase.from('donations').update({
+    title: updates.title,
+    category: updates.category,
+    food_type: updates.foodType,
+    quantity: updates.quantity,
+    unit: updates.unit,
+    urgency: updates.urgency,
+    pickup_start: updates.pickupStart,
+    pickup_end: updates.pickupEnd,
+    location_name: updates.locationName,
+    notes: updates.notes,
+    is_vegetarian: updates.isVegetarian,
+  }).eq('id', id).select().single();
+
+  if (error) return undefined;
+  return mapDonation(data);
+}
+
 export async function getDonationsByNGO(ngoId: string): Promise<Donation[]> {
   const { data } = await supabase.from('donations').select('*').eq('accepted_by_ngo_id', ngoId).order('created_at', { ascending: false });
   return (data || []).map(mapDonation);
@@ -296,6 +318,27 @@ export async function updateDeliveryJobStatus(
   const { data, error } = await supabase.from('delivery_jobs').update({ status, updated_at: new Date().toISOString() }).eq('id', id).select().single();
   if (error) return undefined;
   return mapJob(data);
+}
+
+export async function updateDeliveryJobDonationDetails(
+  donationId: string,
+  updates: Pick<DeliveryJob, 'pickupAddress' | 'donationTitle'>
+): Promise<void> {
+  await supabase
+    .from('delivery_jobs')
+    .update({
+      pickup_address: updates.pickupAddress,
+      donation_title: updates.donationTitle,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('donation_id', donationId);
+}
+
+export async function deleteDonationCascade(donationId: string): Promise<boolean> {
+  await supabase.from('match_suggestions').delete().eq('donation_id', donationId);
+  await supabase.from('delivery_jobs').delete().eq('donation_id', donationId);
+  const { error } = await supabase.from('donations').delete().eq('id', donationId);
+  return !error;
 }
 
 // ─── Analytics ─────────────────────────────────────────────

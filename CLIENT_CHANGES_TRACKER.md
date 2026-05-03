@@ -74,19 +74,20 @@ Status key:
     - `ngo@sharebite.demo` / `demo123`
     - `delivery@sharebite.demo` / `demo123`
 
-- [ ] 10. Donor edit/delete before pickup
-  - Not implemented.
-  - Planned editable fields:
+- [x] 10. Donor edit/delete before pickup
+  - Donor dashboard now shows edit/delete controls on eligible donations.
+  - Editable fields:
     - title
     - food type/category
     - quantity
+    - unit
     - urgency
     - pickup address
     - pickup window/time
     - notes
     - vegetarian flag
-  - Donor can edit/delete only when status is `open`, `accepted`, or `pickup_assigned`.
-  - Donor cannot edit/delete when status is `picked_up`, `in_transit`, or `delivered`.
+  - Server checks allow donor edit/delete only when status is `open`, `accepted`, or `pickup_assigned`.
+  - Server checks block edit/delete when status is `picked_up`, `in_transit`, `delivered`, or `cancelled`.
 
 ## Phase Progress
 
@@ -97,7 +98,7 @@ Status key:
 - [x] Phase 2 - Rename app to Sharebite and simplify copy.
 - [x] Phase 3 - Localize demo data for Bangalore.
 - [x] Phase 4 - Add status dropdown.
-- [ ] Phase 5 - Add donor edit and delete controls.
+- [x] Phase 5 - Add donor edit and delete controls.
 - [ ] Phase 6 - Add food photo upload.
 - [ ] Phase 7 - Add donation zones and predictive insights.
 - [ ] Phase 8 - Improve role-specific Sharebite AI assistant.
@@ -148,3 +149,14 @@ Status key:
 - API workflow test passed for `accepted`, `picked_up`, `in_transit`, `delivered`, `cancelled`, and restore to `assigned`.
 - Donor and NGO API views reflected the synced `delivered` donation status during testing.
 - `npm run build` passed after the Phase 4 changes.
+
+## Current Phase 5 Notes
+
+- Added donor edit and delete controls for donations that are still before pickup.
+- Added edit and delete API checks for donor role, donation ownership, and allowed statuses.
+- Donor edits update the donation row and keep related delivery job title/pickup address in sync.
+- Donor deletes cascade demo-facing related rows from match suggestions and delivery jobs before deleting the donation.
+- UI locks edit/delete controls for `picked_up`, `in_transit`, `delivered`, and `cancelled`.
+- API tests passed for open donation edit/delete, wrong donor blocking, locked status blocking, and pickup-assigned edit propagation to NGO/delivery views.
+- `npm run seed:demo` was run after tests to restore the Bangalore demo baseline.
+- `npm run build` passed after the Phase 5 changes.
