@@ -48,6 +48,7 @@ export default async function DeliveryPage() {
     return {
       ...job,
       priorityScore,
+      donationPhotoUrl: donation?.photoUrl,
       aiReasoning: reasoningParts.join(' • ')
     };
   }));

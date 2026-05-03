@@ -311,6 +311,9 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
           {selectedDonation && (
             <div className="flex flex-col">
               <div className="p-10 bg-[#f8f9f5] border-b border-fb-outline-variant/10 relative">
+                {selectedDonation.photoUrl && (
+                  <img src={selectedDonation.photoUrl} alt={selectedDonation.title} className="mb-8 h-56 w-full rounded-[2rem] object-cover shadow-sm" />
+                )}
                 <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
                   <Package className="w-48 h-48" />
                 </div>
@@ -427,6 +430,9 @@ function DonationCard({ donation, onClick }: { donation: EnrichedDonation; onCli
         isCompleted ? "opacity-60 grayscale-[0.6] hover:grayscale-0 hover:opacity-100" : "hover:border-fb-primary/20"
       )}
     >
+      {donation.photoUrl && (
+        <img src={donation.photoUrl} alt={donation.title} className="h-40 w-full object-cover" />
+      )}
       <CardContent className="p-6 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">

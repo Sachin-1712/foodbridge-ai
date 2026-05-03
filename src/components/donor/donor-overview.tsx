@@ -28,6 +28,7 @@ import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Donation, AnalyticsSnapshot } from '@/types';
 import { toast } from 'sonner';
+import { uploadDonationPhoto } from '@/lib/photo-upload';
 import {
   Package,
   Utensils,
@@ -46,6 +47,7 @@ import {
   Edit3,
   Trash2,
   Loader2,
+  ImagePlus,
 } from 'lucide-react';
 import {
   BarChart,
@@ -105,6 +107,7 @@ const createEditForm = (donation: Donation) => ({
   pickupEnd: isoToTime(donation.pickupEnd),
   notes: donation.notes,
   isVegetarian: donation.isVegetarian,
+  photoUrl: donation.photoUrl || '',
 });
 
 const KPICard = ({ 
@@ -147,6 +150,8 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [deleteDonation, setDeleteDonation] = useState<Donation | null>(null);
   const [editForm, setEditForm] = useState<ReturnType<typeof createEditForm> | null>(null);
+  const [editPhotoFile, setEditPhotoFile] = useState<File | null>(null);
+  const [editPhotoPreview, setEditPhotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -159,10 +164,22 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
   const openEditDialog = (donation: Donation) => {
     setEditingDonation(donation);
     setEditForm(createEditForm(donation));
+    setEditPhotoFile(null);
+    setEditPhotoPreview(donation.photoUrl || null);
   };
 
   const updateEditForm = (field: keyof NonNullable<typeof editForm>, value: string | boolean) => {
     setEditForm((prev) => prev ? { ...prev, [field]: value } : prev);
+  };
+
+  const handleEditPhotoChange = (file: File | null) => {
+    setEditPhotoFile(file);
+    if (!file) {
+      setEditPhotoPreview(editForm?.photoUrl || null);
+      return;
+    }
+
+    setEditPhotoPreview(URL.createObjectURL(file));
   };
 
   const handleSaveEdit = async () => {
@@ -170,6 +187,24 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
     setSaving(true);
 
     try {
+      let photoUrl = editForm.photoUrl || undefined;
+
+      if (editPhotoFile) {
+        const upload = await uploadDonationPhoto(editPhotoFile, editingDonation.id);
+        if (upload.url) {
+          photoUrl = upload.url;
+          if (upload.usedFallback) {
+            toast.info('Photo stored with demo fallback', {
+              description: 'Supabase Storage upload was unavailable, so this small image was saved with the donation.',
+            });
+          }
+        } else {
+          toast.error('Photo upload skipped', {
+            description: upload.error || 'Existing photo was kept.',
+          });
+        }
+      }
+
       const res = await fetch('/api/donations', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -177,6 +212,7 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
           donationId: editingDonation.id,
           donation: {
             ...editForm,
+            photoUrl,
             quantity: Number(editForm.quantity),
           },
         }),
@@ -186,6 +222,8 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
         toast.success('Donation updated');
         setEditingDonation(null);
         setEditForm(null);
+        setEditPhotoFile(null);
+        setEditPhotoPreview(null);
         router.refresh();
       } else {
         const data = await res.json().catch(() => null);
@@ -398,7 +436,11 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
                       className="flex items-center gap-4 p-5 rounded-3xl bg-fb-surface-container-lowest border border-transparent hover:border-fb-outline-variant/10 hover:shadow-md transition-all duration-300 group"
                     >
                       <div className="w-12 h-12 rounded-2xl bg-fb-surface-container flex items-center justify-center text-fb-primary transition-transform group-hover:scale-110">
-                        <Package className="w-6 h-6" />
+                        {d.photoUrl ? (
+                          <img src={d.photoUrl} alt={d.title} className="h-full w-full rounded-2xl object-cover" />
+                        ) : (
+                          <Package className="w-6 h-6" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-black text-fb-on-surface truncate group-hover:text-fb-primary transition-colors">{d.title}</p>
@@ -463,6 +505,8 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
         if (!open) {
           setEditingDonation(null);
           setEditForm(null);
+          setEditPhotoFile(null);
+          setEditPhotoPreview(null);
         }
       }}>
         <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[2rem] bg-white p-0 sm:max-w-3xl">
@@ -545,6 +589,29 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
                 <Input value={editForm.locationName} onChange={(e) => updateEditForm('locationName', e.target.value)} className="h-12 rounded-2xl bg-fb-surface-container-low font-bold" />
               </div>
 
+              <div className="space-y-3 sm:col-span-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Food Photo</Label>
+                <div className="rounded-2xl border border-fb-outline-variant/10 bg-fb-surface-container-low p-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-xl bg-white p-2 text-fb-primary">
+                        <ImagePlus className="w-4 h-4" />
+                      </div>
+                      <p className="text-xs font-bold text-fb-on-surface-variant">Upload or replace food photo</p>
+                    </div>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleEditPhotoChange(e.target.files?.[0] || null)}
+                      className="max-w-[240px] rounded-xl bg-white text-xs font-bold"
+                    />
+                  </div>
+                  {editPhotoPreview && (
+                    <img src={editPhotoPreview} alt="Food preview" className="mt-4 h-48 w-full rounded-2xl object-cover" />
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">Pickup Start</Label>
                 <Input type="time" value={editForm.pickupStart} onChange={(e) => updateEditForm('pickupStart', e.target.value)} className="h-12 rounded-2xl bg-fb-surface-container-low font-bold" />
@@ -563,7 +630,12 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
           )}
 
           <DialogFooter className="rounded-b-[2rem] border-t border-fb-outline-variant/10 bg-fb-surface-container-lowest p-6">
-            <Button variant="outline" className="h-11 rounded-2xl" onClick={() => setEditingDonation(null)} disabled={saving}>
+            <Button variant="outline" className="h-11 rounded-2xl" onClick={() => {
+              setEditingDonation(null);
+              setEditForm(null);
+              setEditPhotoFile(null);
+              setEditPhotoPreview(null);
+            }} disabled={saving}>
               Cancel
             </Button>
             <Button className="h-11 rounded-2xl bg-fb-primary px-6 text-white" onClick={handleSaveEdit} disabled={saving || !editForm?.title || !editForm?.quantity}>

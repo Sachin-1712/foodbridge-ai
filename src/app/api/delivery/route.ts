@@ -5,6 +5,7 @@ import {
   updateDeliveryJobStatus,
   updateDonationStatus,
   getJobById,
+  getDonationById,
 } from '@/lib/store';
 import { DeliveryStatus, DonationStatus } from '@/types';
 
@@ -28,7 +29,11 @@ export async function GET() {
     return NextResponse.json({ error: 'Only delivery users can view delivery jobs' }, { status: 403 });
   }
 
-  const jobs = await getJobsByDeliveryPartner(user.id);
+  const rawJobs = await getJobsByDeliveryPartner(user.id);
+  const jobs = await Promise.all(rawJobs.map(async (job) => {
+    const donation = await getDonationById(job.donationId);
+    return { ...job, donationPhotoUrl: donation?.photoUrl };
+  }));
   return NextResponse.json({ jobs });
 }
 

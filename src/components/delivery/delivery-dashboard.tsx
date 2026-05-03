@@ -380,6 +380,9 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
                 <h2 className="text-xl font-black text-fb-on-surface leading-[1.1] tracking-tight font-[family-name:var(--font-heading)]">
                   {selectedJob.donationTitle}
                 </h2>
+                {selectedJob.donationPhotoUrl && (
+                  <img src={selectedJob.donationPhotoUrl} alt={selectedJob.donationTitle} className="mt-5 h-32 w-full rounded-2xl object-cover" />
+                )}
               </div>
 
               {/* AI Intelligence Panel */}

@@ -154,6 +154,35 @@ Phase 5 verification:
 - Restored the edited seeded donation, then ran `npm run seed:demo` to return Supabase to the Bangalore demo baseline.
 - `npm run build` passed.
 
+## Phase 6 Complete: Food Photo Upload
+
+Donors can now attach food photos when creating a donation and replace the photo from the donor edit dialog.
+
+Phase 6 changes:
+
+- Added `Donation.photoUrl` and Supabase `donations.photo_url` mapping.
+- Added photo upload and preview to the donor create form.
+- Added photo replace and preview to the donor edit dialog.
+- Stores uploaded image URLs in `donations.photo_url`.
+- Displays food images in:
+  - donor donation cards
+  - NGO marketplace cards
+  - NGO donation detail dialog
+  - delivery job details
+- Enriches delivery API/page job data with the related donation photo.
+- Added `npm run storage:setup` for the `donation-photos` bucket.
+- Added a safe upload fallback: if Supabase Storage is unavailable, small demo images are stored as data URLs in `photo_url`; if that also is not safe, the donation still saves without a photo and shows an error toast.
+
+Phase 6 verification:
+
+- `npm run storage:setup` attempted to create `donation-photos`, but Supabase rejected bucket creation with RLS because this environment only has the anon key.
+- Created a donation with a persisted photo URL fallback and confirmed it appeared after donor refresh.
+- Confirmed NGO marketplace API returned the same photo.
+- Edited/replaced the donation photo and confirmed the new photo persisted.
+- Confirmed delivery API returned `donationPhotoUrl` for a photo-enabled assigned job.
+- Cleaned up the test donation and ran `npm run seed:demo` to restore the Bangalore demo baseline.
+- `npm run build` passed.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.

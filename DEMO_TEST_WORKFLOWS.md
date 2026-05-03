@@ -221,3 +221,34 @@ npm run build
 ```
 
 Result: Passed on 2026-05-04.
+
+## Phase 6 Food Photo Upload Test
+
+Purpose: verify donation photos persist and appear across donor, NGO, and delivery views.
+
+Storage setup:
+
+```bash
+npm run storage:setup
+```
+
+Result: bucket creation was attempted, but Supabase returned an RLS error with the current anon-only environment. The app fallback stores small demo images in `donations.photo_url`.
+
+Validated checks:
+
+- Donor created `Phase 6 Photo Test` with a photo URL fallback.
+- Donor API view returned the saved `photoUrl` after refresh.
+- NGO marketplace API view returned the same `photoUrl`.
+- Donor edited the donation and replaced the photo.
+- Donor API view returned the replacement `photoUrl`.
+- Delivery API returned `donationPhotoUrl` for a photo-enabled assigned job.
+- Test donation was deleted.
+- `npm run seed:demo` was run after tests to restore the Bangalore demo baseline.
+
+Build check:
+
+```bash
+npm run build
+```
+
+Result: Passed on 2026-05-04.

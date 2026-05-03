@@ -59,6 +59,7 @@ const mapDonation = (row: any): Donation => ({
   longitude: row.longitude,
   notes: row.notes,
   isVegetarian: row.is_vegetarian,
+  photoUrl: row.photo_url || undefined,
   status: row.status as any,
   acceptedByNgoId: row.accepted_by_ngo_id,
   createdAt: row.created_at,
@@ -178,6 +179,7 @@ export async function createDonation(donation: Donation): Promise<Donation> {
     longitude: donation.longitude,
     notes: donation.notes,
     is_vegetarian: donation.isVegetarian,
+    photo_url: donation.photoUrl || null,
     status: donation.status,
     accepted_by_ngo_id: donation.acceptedByNgoId || null,
   };
@@ -202,7 +204,7 @@ export async function updateDonationStatus(
 
 export async function updateDonationDetails(
   id: string,
-  updates: Pick<Donation, 'title' | 'category' | 'foodType' | 'quantity' | 'unit' | 'urgency' | 'pickupStart' | 'pickupEnd' | 'locationName' | 'notes' | 'isVegetarian'>
+  updates: Pick<Donation, 'title' | 'category' | 'foodType' | 'quantity' | 'unit' | 'urgency' | 'pickupStart' | 'pickupEnd' | 'locationName' | 'notes' | 'isVegetarian' | 'photoUrl'>
 ): Promise<Donation | undefined> {
   const { data, error } = await supabase.from('donations').update({
     title: updates.title,
@@ -216,6 +218,7 @@ export async function updateDonationDetails(
     location_name: updates.locationName,
     notes: updates.notes,
     is_vegetarian: updates.isVegetarian,
+    photo_url: updates.photoUrl || null,
   }).eq('id', id).select().single();
 
   if (error) return undefined;

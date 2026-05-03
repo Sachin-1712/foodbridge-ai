@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     }
 
     const donation: Donation = {
-      id: crypto.randomUUID(),
+      id: body.donation.id || crypto.randomUUID(),
       donorId: user.id,
       title: body.donation.title,
       category: body.donation.category,
@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
       longitude: body.donation.longitude || -0.124,
       notes: body.donation.notes || '',
       isVegetarian: body.donation.isVegetarian || false,
+      photoUrl: body.donation.photoUrl || undefined,
       status: 'open',
       createdAt: new Date().toISOString(),
     };
@@ -242,6 +243,7 @@ export async function PATCH(request: NextRequest) {
     locationName: body.donation.locationName || donation.locationName,
     notes: body.donation.notes || '',
     isVegetarian: Boolean(body.donation.isVegetarian),
+    photoUrl: body.donation.photoUrl ?? donation.photoUrl,
   });
 
   if (!edited) {

@@ -75,6 +75,7 @@ export interface Donation {
   longitude: number;
   notes: string;
   isVegetarian: boolean;
+  photoUrl?: string;
   status: DonationStatus;
   acceptedByNgoId?: string;
   createdAt: string;
@@ -101,6 +102,7 @@ export interface DeliveryJob {
   distanceKm: number;
   status: DeliveryStatus;
   donationTitle: string;
+  donationPhotoUrl?: string;
   createdAt: string;
   updatedAt: string;
   priorityScore?: number;

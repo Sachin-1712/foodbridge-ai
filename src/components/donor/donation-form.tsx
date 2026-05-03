@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { uploadDonationPhoto } from '@/lib/photo-upload';
 import {
   Package,
   MapPin,
@@ -30,6 +31,7 @@ import {
   Loader2,
   Calendar,
   AlertCircle,
+  ImagePlus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -52,6 +54,8 @@ const urgencyLevels = [
 export function DonationForm({ donorArea }: { donorArea?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: '',
     category: '',
@@ -70,11 +74,39 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handlePhotoChange = (file: File | null) => {
+    setPhotoFile(file);
+    if (!file) {
+      setPhotoPreview(null);
+      return;
+    }
+
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      const donationId = crypto.randomUUID();
+      let photoUrl: string | undefined;
+
+      if (photoFile) {
+        const upload = await uploadDonationPhoto(photoFile, donationId);
+        photoUrl = upload.url;
+
+        if (upload.usedFallback) {
+          toast.info('Photo stored with demo fallback', {
+            description: 'Supabase Storage upload was unavailable, so this small image was saved with the donation.',
+          });
+        } else if (!upload.url) {
+          toast.error('Photo upload skipped', {
+            description: upload.error || 'The donation will be saved without a photo.',
+          });
+        }
+      }
+
       const res = await fetch('/api/donations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,7 +114,9 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
           action: 'create',
           donation: {
             ...form,
+            id: donationId,
             quantity: Number(form.quantity),
+            photoUrl,
           },
         }),
       });
@@ -227,6 +261,31 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                       onCheckedChange={(v) => update('isVegetarian', v)}
                       className="data-[state=checked]:bg-fb-primary"
                     />
+                  </div>
+
+                  <div className="space-y-3 rounded-2xl border border-fb-outline-variant/10 bg-fb-surface-container-low p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-white text-fb-primary">
+                          <ImagePlus className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-fb-on-surface uppercase tracking-widest">Food Photo</p>
+                          <p className="text-[10px] font-bold text-fb-on-surface-variant uppercase opacity-60">Optional image preview</p>
+                        </div>
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handlePhotoChange(e.target.files?.[0] || null)}
+                        className="max-w-[220px] rounded-xl bg-white text-xs font-bold"
+                      />
+                    </div>
+                    {photoPreview && (
+                      <div className="overflow-hidden rounded-2xl border border-fb-outline-variant/10 bg-white">
+                        <img src={photoPreview} alt="Food preview" className="h-48 w-full object-cover" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

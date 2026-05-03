@@ -48,11 +48,12 @@ Status key:
   - Planned for NGO Analytics and optionally Delivery map panel.
   - Should be labeled: "AI-assisted prediction based on recent donation patterns."
 
-- [~] 6. Food photo upload
-  - Supabase `donations.photo_url` column already exists.
-  - No Supabase Storage bucket exists.
-  - No create/edit UI upload or card image display exists.
-  - Preferred bucket name: `donation-photos`.
+- [x] 6. Food photo upload
+  - Added `photoUrl` support for donations and `photo_url` Supabase mapping.
+  - Donor create and edit flows support image upload/replace with preview.
+  - Donation photos display on donor cards, NGO marketplace/details, and delivery job details/API data.
+  - Preferred Storage bucket is `donation-photos`.
+  - Current anon key cannot create the bucket because of Supabase RLS, so small demo images fall back to persisted data URLs if Storage upload is unavailable.
 
 - [~] 7. Role-specific chatbot
   - Chat panel has role-specific greeting text.
@@ -99,7 +100,7 @@ Status key:
 - [x] Phase 3 - Localize demo data for Bangalore.
 - [x] Phase 4 - Add status dropdown.
 - [x] Phase 5 - Add donor edit and delete controls.
-- [ ] Phase 6 - Add food photo upload.
+- [x] Phase 6 - Add food photo upload.
 - [ ] Phase 7 - Add donation zones and predictive insights.
 - [ ] Phase 8 - Improve role-specific Sharebite AI assistant.
 - [ ] Phase 9 - Add role-verified demo login.
@@ -160,3 +161,13 @@ Status key:
 - API tests passed for open donation edit/delete, wrong donor blocking, locked status blocking, and pickup-assigned edit propagation to NGO/delivery views.
 - `npm run seed:demo` was run after tests to restore the Bangalore demo baseline.
 - `npm run build` passed after the Phase 5 changes.
+
+## Current Phase 6 Notes
+
+- Added food photo support to `Donation.photoUrl` and Supabase `donations.photo_url`.
+- Added `npm run storage:setup` to create/use the `donation-photos` bucket when a service role key is available.
+- Attempted bucket creation with the current environment; Supabase blocked it with RLS because only the anon key is present.
+- Donor create/edit image upload tries Supabase Storage first, then safely falls back to storing small demo images directly in `photo_url`.
+- Donor cards, NGO marketplace cards/details, and delivery job details can render saved food photos.
+- API tests passed for creating a donation with a persisted photo, NGO marketplace photo visibility, replacing the photo, delivery API photo visibility, cleanup, and reseed.
+- `npm run build` passed after the Phase 6 changes.
