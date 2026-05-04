@@ -292,3 +292,52 @@ npm run build
 ```
 
 Result: Passed on 2026-05-04.
+
+## Phase 8 Role-Specific Sharebite AI Test
+
+Purpose: verify that Sharebite AI changes behavior by role, keeps core actions deterministic, and still preserves the donor -> NGO -> delivery workflow.
+
+Setup:
+
+```bash
+npm run seed:demo
+```
+
+Result: Passed. The reseed created 18 profiles, 15 donations, 14 match suggestions, 6 delivery jobs, and 42 analytics snapshots.
+
+Validated chatbot checks:
+
+- Donor chat creation path:
+  - The chat panel now collects donation details step by step and calls the existing donation creation API only after confirmation.
+  - Programmatic API validation created `Phase 8 Chat Wizard Test Meals` through the same API path.
+  - The created donation generated 5 match suggestions.
+  - The test donation was deleted after validation.
+- NGO chat:
+  - `Give me today's donation update` returned current open donation counts and live examples.
+  - `Explain donation zones` returned a Bangalore zone summary based on current donation rows.
+- Delivery chat:
+  - `What should I do next?` returned the next active pickup from current delivery jobs.
+- Loading UX:
+  - Chat input disables while waiting.
+  - Send button shows loading state.
+  - Assistant bubble shows `Sharebite AI is thinking...` with animated dots.
+  - Duplicate sends are guarded while a request is in flight.
+
+Validated workflow regression:
+
+- Donor created `Phase 8 Workflow Test Lunch Packs`.
+- Donor dashboard API saw the donation.
+- NGO marketplace API saw the donation.
+- NGO accepted the donation.
+- Delivery dashboard API saw the created delivery job.
+- Delivery updated the job to `in_transit`.
+- Donor and NGO API views both reflected donation status `in_transit`.
+- `npm run seed:demo` was run again after the workflow test to restore the Bangalore demo baseline.
+
+Build check:
+
+```bash
+npm run build
+```
+
+Result: Passed on 2026-05-04.

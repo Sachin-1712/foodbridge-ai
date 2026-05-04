@@ -253,8 +253,40 @@ Donation Zones layout cleanup:
 - Moved Top Partnerships, Impact Mix, Response Trends, and compact impact stats into the right analytics column.
 - Kept the compact Top Insight typewriter animation inside the Donation Zones section.
 
+## Phase 8 Complete: Role-Specific Sharebite AI Assistant
+
+Sharebite AI now behaves differently for donors, NGOs, and delivery partners while keeping core actions deterministic.
+
+Phase 8 changes:
+
+- Added role-specific chatbot prompt chips:
+  - Donor: create donation, edit rules, photo guidance, required details
+  - NGO: today's donation update, accept-first priority, donation zones, match score
+  - Delivery: next action, route help, status dropdown, urgent pickup
+- Added a visible loading state: "Sharebite AI is thinking..." with animated dots.
+- Disabled sends while waiting and added duplicate-send protection.
+- Added a donor guided donation wizard in the chat panel.
+- The donor wizard collects structured fields, shows a summary, and creates the donation only after confirmation.
+- The wizard uses the existing `/api/donations` creation path, so Phase 1 role checks and match generation still apply.
+- Added role-aware `/api/chat` behavior backed by the current session role.
+- NGO answers use live Supabase data for open donations, match suggestions, donation zones, and analytics.
+- Delivery answers use live delivery jobs plus related donation urgency to recommend the next pickup and route/status guidance.
+- Gemini is optional and only rewrites deterministic answers. If Gemini is unavailable, rate-limited, or fails, deterministic fallback responses are returned.
+- Expanded Bangalore seed data with more donors, a backup delivery user, more open/active/completed/cancelled donations, sample photo URLs, more match suggestions, more delivery jobs, and analytics snapshots for multiple NGOs.
+
+Phase 8 verification:
+
+- `npm run seed:demo` passed and recreated 18 profiles, 5 NGO profiles, 15 donations, 14 match suggestions, 6 delivery jobs, and 42 analytics snapshots.
+- Programmatic donor creation through the same API path used by the chat wizard created a test donation and generated 5 matches.
+- NGO chatbot "Give me today's donation update" returned live open donation counts and examples.
+- NGO chatbot "Explain donation zones" returned a Bangalore zone summary from current donation rows.
+- Delivery chatbot "What should I do next?" returned the next active pickup from current delivery jobs.
+- Donor -> NGO -> delivery workflow test passed: donor created, NGO accepted, delivery job appeared, delivery set `in_transit`, and donor/NGO views reflected `in_transit`.
+- `npm run seed:demo` was run after workflow testing to restore the Bangalore baseline.
+- `npm run build` passed.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.
 - One pre-existing inconsistent live demo row remains quarantined/documented instead of deleted.
-- No photo upload/storage work was done; this is planned for Phase 6.
+- Supabase Storage bucket creation still requires service-role/admin setup; the app keeps the Phase 6 small-image fallback.

@@ -47,7 +47,7 @@ Status key:
   - NGO Analytics now shows Donation Zones & Predictions.
   - Groups current Supabase donation rows by supported Bangalore areas.
   - Shows zone cards with donation count, total quantity, common food type, active/open donations, completed donations, predicted peak window, and recommendation.
-  - Includes a Bangalore map-style panel with top zone markers.
+  - Includes a Bangalore map context panel and ranked zone list.
   - Labeled honestly as rule-based: "AI-assisted prediction based on recent donation patterns."
 
 - [x] 6. Food photo upload
@@ -57,11 +57,12 @@ Status key:
   - Preferred Storage bucket is `donation-photos`.
   - Current anon key cannot create the bucket because of Supabase RLS, so small demo images fall back to persisted data URLs if Storage upload is unavailable.
 
-- [~] 7. Role-specific chatbot
-  - Chat panel has role-specific greeting text.
-  - `/api/chat` does not receive or use role context yet.
-  - Phase 2 updated chatbot labels, fallback text, and Gemini system prompt to use Sharebite naming.
-  - Role-specific API behavior is still planned for Phase 8.
+- [x] 7. Role-specific chatbot
+  - Chat panel now has role-specific greetings, suggested prompt chips, loading state, and duplicate-send protection.
+  - Donors can use a structured chat wizard to create a donation through the existing donation API after confirmation.
+  - NGOs get deterministic live-data answers for open donations, accept-first priority, donation zones, match score, and analytics.
+  - Delivery users get deterministic live-data answers for next pickup, urgent jobs, routes, status dropdowns, and after-pickup steps.
+  - Gemini is optional and only rewrites completed deterministic answers when available.
 
 - [x] 8. Rename website to Sharebite
   - Visible app branding, metadata, chatbot labels, README, and setup/deployment docs now use Sharebite.
@@ -104,7 +105,7 @@ Status key:
 - [x] Phase 5 - Add donor edit and delete controls.
 - [x] Phase 6 - Add food photo upload.
 - [x] Phase 7 - Add donation zones and predictive insights.
-- [ ] Phase 8 - Improve role-specific Sharebite AI assistant.
+- [x] Phase 8 - Improve role-specific Sharebite AI assistant.
 - [ ] Phase 9 - Add role-verified demo login.
 - [ ] Phase 10 - Final UI polish and deployment readiness.
 
@@ -187,3 +188,18 @@ Status key:
 - `npm run seed:demo` passed and produced 8 zones from Bangalore seed data.
 - NGO Analytics page returned HTTP 200 locally and included the prediction label plus seeded zones.
 - `npm run build` passed after the Phase 7 changes.
+
+## Current Phase 8 Notes
+
+- Added role-specific Sharebite AI prompt chips and role labels for donor, NGO, and delivery users.
+- Added a loading/typing state with "Sharebite AI is thinking..." and disabled sends while requests are in flight.
+- Added deterministic donor guided donation creation inside the chat panel:
+  - collects title, category/food type, quantity/unit, pickup address, pickup window, urgency, vegetarian flag, and notes
+  - shows a summary before create
+  - creates only after explicit confirmation through the existing donation API
+- Added `/api/chat` role context and session-aware deterministic responses.
+- NGO chatbot answers use live Supabase donation, match, zone, and analytics data.
+- Delivery chatbot answers use live assigned delivery job data and related donation urgency.
+- Gemini remains optional and only rewrites deterministic answers; fallback responses still work without Gemini.
+- Expanded Bangalore demo seed data to 18 profiles, 15 donations, 14 match suggestions, 6 delivery jobs, and 42 analytics snapshots.
+- `npm run seed:demo` passed, endpoint tests passed, the cross-role workflow test passed, and `npm run build` passed.
