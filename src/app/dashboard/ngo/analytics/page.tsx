@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getNGOStats, getAnalyticsForNGO, getDonationsByNGO } from '@/lib/store';
+import { getNGOStats, getAnalyticsForNGO, getDonationsByNGO, getAllDonations } from '@/lib/store';
 import { NGOAnalytics } from '@/components/ngo/ngo-analytics';
 
 export const dynamic = 'force-dynamic';
@@ -13,12 +13,14 @@ export default async function NGOAnalyticsPage() {
   const stats = await getNGOStats(user.id);
   const analytics = await getAnalyticsForNGO(user.id);
   const donations = await getDonationsByNGO(user.id);
+  const zoneDonations = await getAllDonations();
 
   return (
     <NGOAnalytics
       stats={stats}
       analytics={analytics}
       donations={donations}
+      zoneDonations={zoneDonations}
       ngoName={user.organizationName}
     />
   );

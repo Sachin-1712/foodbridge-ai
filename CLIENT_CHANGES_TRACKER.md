@@ -43,10 +43,12 @@ Status key:
     - Cancelled
   - Delivery status updates sync the related donation status across donor and NGO views.
 
-- [ ] 5. Donation zones + map/prediction insights
-  - Not implemented.
-  - Planned for NGO Analytics and optionally Delivery map panel.
-  - Should be labeled: "AI-assisted prediction based on recent donation patterns."
+- [x] 5. Donation zones + map/prediction insights
+  - NGO Analytics now shows Donation Zones & Predictions.
+  - Groups current Supabase donation rows by supported Bangalore areas.
+  - Shows zone cards with donation count, total quantity, common food type, active/open donations, completed donations, predicted peak window, and recommendation.
+  - Includes a Bangalore map-style panel with top zone markers.
+  - Labeled honestly as rule-based: "AI-assisted prediction based on recent donation patterns."
 
 - [x] 6. Food photo upload
   - Added `photoUrl` support for donations and `photo_url` Supabase mapping.
@@ -101,7 +103,7 @@ Status key:
 - [x] Phase 4 - Add status dropdown.
 - [x] Phase 5 - Add donor edit and delete controls.
 - [x] Phase 6 - Add food photo upload.
-- [ ] Phase 7 - Add donation zones and predictive insights.
+- [x] Phase 7 - Add donation zones and predictive insights.
 - [ ] Phase 8 - Improve role-specific Sharebite AI assistant.
 - [ ] Phase 9 - Add role-verified demo login.
 - [ ] Phase 10 - Final UI polish and deployment readiness.
@@ -171,3 +173,17 @@ Status key:
 - Donor cards, NGO marketplace cards/details, and delivery job details can render saved food photos.
 - API tests passed for creating a donation with a persisted photo, NGO marketplace photo visibility, replacing the photo, delivery API photo visibility, cleanup, and reseed.
 - `npm run build` passed after the Phase 6 changes.
+
+## Current Phase 7 Notes
+
+- Added Donation Zones & Predictions to NGO Analytics.
+- Uses current Supabase donation rows, grouped by Bangalore area from `donations.location_name`.
+- Calculates donation count, total quantity, common food type, active/open count, completed count, urgency level, and predicted peak window.
+- Prediction logic is deterministic and demo-friendly, not trained machine learning.
+- Highest donation count becomes the highest activity zone.
+- Urgent active donations become the immediate attention zone.
+- Active recent rows influence the next pickup zone.
+- Weak/overnight time data uses sensible demo labels such as Evening.
+- `npm run seed:demo` passed and produced 8 zones from Bangalore seed data.
+- NGO Analytics page returned HTTP 200 locally and included the prediction label plus seeded zones.
+- `npm run build` passed after the Phase 7 changes.

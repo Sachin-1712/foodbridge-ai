@@ -252,3 +252,43 @@ npm run build
 ```
 
 Result: Passed on 2026-05-04.
+
+## Phase 7 Donation Zones Test
+
+Purpose: verify NGO Analytics shows Bangalore donation zones and rule-based predictions from current Supabase donation rows.
+
+Setup:
+
+```bash
+npm run seed:demo
+```
+
+Result: Passed. Bangalore seed data produced 8 zones with donation rows.
+
+Validated checks:
+
+- Zone calculation used current `donations` rows from Supabase.
+- Grouping used Bangalore area names from `location_name`.
+- At least 3 zones appeared; seed data produced:
+  - Koramangala
+  - Indiranagar
+  - Jayanagar
+  - Whitefield
+  - HSR Layout
+  - MG Road
+  - Electronic City
+  - Malleshwaram
+- Top zone was based on highest donation count.
+- Active/open and urgent rows influenced attention recommendations.
+- Common food type and predicted peak window were derived from donation rows.
+- NGO Analytics page returned HTTP 200 locally.
+- Page included the label: `AI-assisted prediction based on recent donation patterns.`
+- Empty-data handling exists through a no-zone-data state.
+
+Build check:
+
+```bash
+npm run build
+```
+
+Result: Passed on 2026-05-04.

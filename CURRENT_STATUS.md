@@ -183,6 +183,54 @@ Phase 6 verification:
 - Cleaned up the test donation and ran `npm run seed:demo` to restore the Bangalore demo baseline.
 - `npm run build` passed.
 
+## Phase 7 Complete: Donation Zones And Predictive Insights
+
+NGO Analytics now includes a demo-friendly Donation Zones & Predictions section for Bangalore.
+
+Phase 7 changes:
+
+- Added city-wide zone analysis using current Supabase donation rows.
+- Supported Bangalore zones:
+  - Koramangala
+  - Indiranagar
+  - Jayanagar
+  - Whitefield
+  - HSR Layout
+  - MG Road
+  - Electronic City
+  - JP Nagar
+  - Malleshwaram
+  - Marathahalli
+  - Hebbal
+- Added zone cards showing:
+  - donation count
+  - total quantity/meals
+  - common food type
+  - active/open donations
+  - completed donations
+  - predicted peak window
+  - recommendation
+- Added a polished Bangalore map-style panel with top zone markers.
+- Added a top insight card summarizing the highest activity zone.
+- Labeled the feature honestly as: "AI-assisted prediction based on recent donation patterns."
+
+Prediction logic:
+
+- Highest donation count = highest activity zone.
+- Open/active urgent donations = needs immediate NGO attention.
+- Most common food type = likely upcoming food type.
+- Active donations = likely next pickup zone.
+- Pickup/prepared/created time buckets produce Morning, Afternoon, and Evening labels; weak overnight data falls back to Evening for the demo.
+- No trained ML model is used.
+
+Phase 7 verification:
+
+- `npm run seed:demo` passed.
+- Supabase seed data produced 8 Bangalore donation zones.
+- Local NGO Analytics page returned HTTP 200 and included the prediction label plus seeded zones.
+- Empty-data handling is present with a no-zone-data state.
+- `npm run build` passed.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.
