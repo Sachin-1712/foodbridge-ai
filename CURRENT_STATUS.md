@@ -285,6 +285,29 @@ Phase 8 verification:
 - `npm run seed:demo` was run after workflow testing to restore the Bangalore baseline.
 - `npm run build` passed.
 
+## Focused Cleanup Before Phase 9
+
+Cleanup changes:
+
+- Removed the large donor dashboard "AI Suggestion" panel for a cleaner demo layout.
+- Fixed donor "Donation Activity" so it derives chart data from the donor's actual Supabase donation rows when no analytics prop is provided.
+- Donor activity now counts open, accepted, pickup assigned, picked up, in transit, delivered, and cancelled rows where present.
+- Added a useful donor activity fallback instead of a blank chart area when there are no donation rows.
+- Improved NGO marketplace card wrapping so long titles, notes, and pickup locations are not clipped awkwardly.
+- Improved NGO donation detail modal:
+  - capped the modal height to the viewport
+  - added internal scrolling
+  - allowed long title, food type, pickup location, notes, and match suggestion text to wrap
+  - kept image content contained with a safe max height
+
+Cleanup verification:
+
+- `npm run build` passed.
+- Donor API returned real donation rows for the seeded donor, including `open`, `pickup_assigned`, `delivered`, and `cancelled`.
+- Donor, NGO, and delivery chatbot endpoints each returned 200.
+- Donor -> NGO -> delivery workflow smoke test passed and synced the test donation to `in_transit`.
+- `npm run seed:demo` was run after testing to restore the Bangalore demo baseline.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.

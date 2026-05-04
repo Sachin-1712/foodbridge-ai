@@ -304,21 +304,22 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedDonation} onOpenChange={() => setSelectedDonation(null)}>
-        <DialogContent className="max-w-2xl bg-white border-none rounded-[3rem] p-0 overflow-hidden shadow-2xl outline-none">
+        <DialogContent className="max-h-[92vh] max-w-3xl bg-white border-none rounded-[2.5rem] p-0 overflow-hidden shadow-2xl outline-none">
           <DialogDescription className="sr-only">
             Detailed information about this donation signal, including volume, resource type, and deployment window.
           </DialogDescription>
           {selectedDonation && (
-            <div className="flex flex-col">
-              <div className="p-10 bg-[#f8f9f5] border-b border-fb-outline-variant/10 relative">
+            <div className="flex max-h-[92vh] flex-col">
+              <div className="overflow-y-auto custom-scrollbar">
+              <div className="p-6 sm:p-8 bg-[#f8f9f5] border-b border-fb-outline-variant/10 relative">
                 {selectedDonation.photoUrl && (
-                  <img src={selectedDonation.photoUrl} alt={selectedDonation.title} className="mb-8 h-56 w-full rounded-[2rem] object-cover shadow-sm" />
+                  <img src={selectedDonation.photoUrl} alt={selectedDonation.title} className="mb-6 max-h-72 w-full rounded-[2rem] object-cover shadow-sm" />
                 )}
                 <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
                   <Package className="w-48 h-48" />
                 </div>
-                <div className="flex items-center justify-between mb-6 relative z-10">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 relative z-10">
+                  <div className="flex flex-wrap items-center gap-3">
                     <UrgencyBadge urgency={selectedDonation.urgency} className="h-6 px-4 text-[10px] font-black" />
                     {selectedDonation.isVegetarian && (
                       <Badge className="bg-fb-primary/10 text-fb-primary border-none px-4 h-6 text-[10px] font-black uppercase tracking-widest">Vegetarian</Badge>
@@ -328,22 +329,22 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                 </div>
                 
                 <DialogTitle asChild>
-                  <h2 className="text-4xl font-black text-fb-on-surface tracking-tighter font-[family-name:var(--font-heading)] leading-[1.1] relative z-10 max-w-lg">
+                  <h2 className="break-words text-3xl sm:text-4xl font-black text-fb-on-surface tracking-tighter font-[family-name:var(--font-heading)] leading-[1.1] relative z-10 max-w-2xl">
                     {selectedDonation.title}
                   </h2>
                 </DialogTitle>
                 
-                <div className="mt-10 grid grid-cols-3 gap-8 relative z-10">
+                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 relative z-10">
                   <DetailItem label="Quantity" value={`${selectedDonation.quantity} ${selectedDonation.unit}`} icon={Package} />
-                  <DetailItem label="Food Type" value={categoryLabels[selectedDonation.category]} icon={Utensils} />
+                  <DetailItem label="Food Type" value={selectedDonation.foodType || categoryLabels[selectedDonation.category]} icon={Utensils} />
                   <DetailItem label="Pickup Location" value={selectedDonation.locationName} icon={MapPin} />
                 </div>
               </div>
 
-              <div className="p-10 space-y-10">
+              <div className="p-6 sm:p-8 space-y-8">
                 {/* AI Intelligence Card */}
                 {selectedDonation.matchScore && (
-                  <div className="relative p-8 rounded-[2rem] bg-[#0f5238] overflow-hidden group">
+                  <div className="relative p-6 sm:p-8 rounded-[2rem] bg-[#0f5238] overflow-hidden group">
                     <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
                       <Zap className="w-24 h-24 text-white" />
                     </div>
@@ -360,7 +361,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                           <span className="text-[10px] font-black text-[#95d5b2]/60 uppercase">% Match</span>
                         </div>
                       </div>
-                      <p className="text-base font-medium text-white/90 leading-relaxed tracking-tight italic">
+                    <p className="break-words text-sm sm:text-base font-medium text-white/90 leading-relaxed tracking-tight italic">
                         "{selectedDonation.matchReason}"
                       </p>
                     </div>
@@ -380,7 +381,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                   {selectedDonation.notes && (
                     <div className="space-y-3">
                       <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40">Notes</span>
-                      <p className="text-xs font-medium text-fb-on-surface-variant bg-fb-surface-container-low p-4 rounded-2xl border border-fb-outline-variant/5 italic leading-relaxed">
+                      <p className="whitespace-pre-wrap break-words text-xs font-medium text-fb-on-surface-variant bg-fb-surface-container-low p-4 rounded-2xl border border-fb-outline-variant/5 italic leading-relaxed">
                         {selectedDonation.notes}
                       </p>
                     </div>
@@ -411,6 +412,7 @@ export function NGODashboard({ stats, openDonations, acceptedDonations, ngoName 
                   </Button>
                 </div>
               </div>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -426,7 +428,7 @@ function DonationCard({ donation, onClick }: { donation: EnrichedDonation; onCli
     <Card 
       onClick={onClick}
       className={cn(
-        "group cursor-pointer bg-white border border-fb-outline-variant/10 rounded-[2rem] shadow-sm hover:shadow-md hover:translate-y-[-4px] transition-all duration-500 relative overflow-hidden flex flex-col h-full",
+        "group cursor-pointer bg-white border border-fb-outline-variant/10 rounded-[2rem] shadow-sm hover:shadow-md hover:translate-y-[-4px] transition-all duration-500 relative overflow-hidden flex flex-col h-full min-w-0",
         isCompleted ? "opacity-60 grayscale-[0.6] hover:grayscale-0 hover:opacity-100" : "hover:border-fb-primary/20"
       )}
     >
@@ -448,34 +450,39 @@ function DonationCard({ donation, onClick }: { donation: EnrichedDonation; onCli
         </div>
 
         <h3 className={cn(
-          "text-xl font-black text-fb-on-surface tracking-tight leading-[1.15] mb-6 line-clamp-2 transition-colors",
+          "text-lg font-black text-fb-on-surface tracking-tight leading-[1.2] mb-4 break-words transition-colors",
           isCompleted ? "text-fb-on-surface-variant" : "group-hover:text-fb-primary"
         )}>
           {donation.title}
         </h3>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-4 mb-6">
+        <div className="grid grid-cols-1 gap-3 mb-5 sm:grid-cols-2">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-fb-surface-container group-hover:bg-fb-primary/5 transition-colors">
               <Package className="w-3.5 h-3.5 text-fb-on-surface-variant opacity-60" />
             </div>
-            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest">{donation.quantity} {donation.unit}</span>
+            <span className="min-w-0 break-words text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest">{donation.quantity} {donation.unit}</span>
           </div>
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-fb-surface-container group-hover:bg-fb-primary/5 transition-colors">
               <Clock className="w-3.5 h-3.5 text-fb-on-surface-variant opacity-60" />
             </div>
-            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest">T-Window</span>
+            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest">{categoryLabels[donation.category]}</span>
           </div>
         </div>
+        {donation.notes && (
+          <p className="mb-5 line-clamp-2 break-words rounded-2xl bg-fb-surface-container-low p-3 text-[11px] font-semibold leading-relaxed text-fb-on-surface-variant">
+            {donation.notes}
+          </p>
+        )}
 
         <div className="flex items-center justify-between pt-6 border-t border-fb-outline-variant/5 mt-auto">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-start gap-2 min-w-0">
             <div className={cn(
-              "w-2 h-2 rounded-full transition-colors",
+              "mt-1 w-2 h-2 shrink-0 rounded-full transition-colors",
               isCompleted ? "bg-zinc-300" : "bg-fb-primary/40 group-hover:bg-fb-primary"
             )} />
-            <span className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest truncate">{donation.locationName}</span>
+            <span className="min-w-0 break-words text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest leading-snug">{donation.locationName}</span>
           </div>
           <ArrowUpRight className={cn(
             "w-5 h-5 transition-all",
@@ -489,12 +496,12 @@ function DonationCard({ donation, onClick }: { donation: EnrichedDonation; onCli
 
 function DetailItem({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
   return (
-    <div className="space-y-2">
+    <div className="min-w-0 space-y-2 rounded-2xl bg-white/70 p-4">
       <div className="flex items-center gap-2 text-[10px] font-black text-fb-on-surface-variant uppercase tracking-[0.2em] opacity-40">
         <Icon className="w-3.5 h-3.5" />
         {label}
       </div>
-      <p className="text-sm font-black text-fb-on-surface truncate leading-none">{value}</p>
+      <p className="break-words text-sm font-black text-fb-on-surface leading-snug">{value}</p>
     </div>
   );
 }

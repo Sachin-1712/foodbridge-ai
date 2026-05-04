@@ -37,13 +37,8 @@ import {
   MapPin,
   Clock,
   ArrowUpRight,
-  Sparkles,
   BarChart3,
-  Leaf,
-  ChevronRight,
   Heart,
-  Zap,
-  ArrowRight,
   Edit3,
   Trash2,
   Loader2,
@@ -94,6 +89,8 @@ const urgencyLevels = [
 const units = ['kg', 'portions', 'litres', 'items', 'boxes', 'packs', 'cups', 'bottles', 'sandwiches'];
 
 const isoToTime = (value: string) => value?.slice(11, 16) || '';
+
+const statusOrder = ['open', 'accepted', 'pickup_assigned', 'picked_up', 'in_transit', 'delivered', 'cancelled'];
 
 const createEditForm = (donation: Donation) => ({
   title: donation.title,
@@ -155,11 +152,30 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const chartData = analytics.map((a) => ({
-    date: new Date(a.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-    donations: a.donationsReceived,
-    meals: a.mealsRescued,
-  }));
+  const donationActivity = recentDonations.reduce<Record<string, { date: string; donations: number; meals: number }>>((acc, donation) => {
+    const label = new Date(donation.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    if (!acc[label]) {
+      acc[label] = { date: label, donations: 0, meals: 0 };
+    }
+    acc[label].donations += 1;
+    acc[label].meals += donation.quantity;
+    return acc;
+  }, {});
+
+  const chartData = analytics.length > 0
+    ? analytics.map((a) => ({
+        date: new Date(a.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        donations: a.donationsReceived,
+        meals: a.mealsRescued,
+      }))
+    : Object.values(donationActivity);
+  const hasChartData = chartData.some((row) => row.donations > 0 || row.meals > 0);
+  const statusSummary = statusOrder
+    .map((status) => ({
+      status,
+      count: recentDonations.filter((donation) => donation.status === status).length,
+    }))
+    .filter((item) => item.count > 0);
 
   const openEditDialog = (donation: Donation) => {
     setEditingDonation(donation);
@@ -322,85 +338,72 @@ export function DonorOverview({ stats, recentDonations, analytics = [], donorNam
               <Badge variant="outline" className="text-[10px] font-black border-fb-outline-variant/20 px-3 py-1 rounded-lg">LIVE DATA</Badge>
             </div>
             <div className="p-8">
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <defs>
-                      <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#0f5238" stopOpacity={1} />
-                        <stop offset="100%" stopColor="#2d6a4f" stopOpacity={0.8} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                    <XAxis 
-                      dataKey="date" 
-                      fontSize={10} 
-                      fontWeight={700}
-                      tickLine={false} 
-                      axisLine={false} 
-                      stroke="#a0a0a0" 
-                      dy={10}
-                    />
-                    <YAxis 
-                      fontSize={10} 
-                      fontWeight={700}
-                      tickLine={false} 
-                      axisLine={false} 
-                      stroke="#a0a0a0" 
-                    />
-                    <Tooltip
-                      cursor={{ fill: '#f8f9f5' }}
-                      contentStyle={{
-                        borderRadius: '16px',
-                        border: 'none',
-                        boxShadow: '0 10px 30px rgba(15,82,56,0.1)',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        background: '#ffffff',
-                        padding: '12px 16px',
-                      }}
-                    />
-                    <Bar dataKey="donations" fill="url(#chartGradient)" radius={[6, 6, 0, 0]} barSize={24} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {hasChartData ? (
+                <>
+                  <div className="h-[260px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData}>
+                        <defs>
+                          <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#0f5238" stopOpacity={1} />
+                            <stop offset="100%" stopColor="#2d6a4f" stopOpacity={0.8} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis 
+                          dataKey="date" 
+                          fontSize={10} 
+                          fontWeight={700}
+                          tickLine={false} 
+                          axisLine={false} 
+                          stroke="#a0a0a0" 
+                          dy={10}
+                        />
+                        <YAxis 
+                          fontSize={10} 
+                          fontWeight={700}
+                          tickLine={false} 
+                          axisLine={false} 
+                          stroke="#a0a0a0" 
+                        />
+                        <Tooltip
+                          cursor={{ fill: '#f8f9f5' }}
+                          contentStyle={{
+                            borderRadius: '16px',
+                            border: 'none',
+                            boxShadow: '0 10px 30px rgba(15,82,56,0.1)',
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            background: '#ffffff',
+                            padding: '12px 16px',
+                          }}
+                        />
+                        <Bar dataKey="donations" fill="url(#chartGradient)" radius={[6, 6, 0, 0]} barSize={24} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {statusSummary.length > 0 && (
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {statusSummary.map((item) => (
+                        <div key={item.status} className="rounded-2xl bg-fb-surface-container-low px-3 py-2">
+                          <p className="text-[8px] font-black uppercase tracking-widest text-fb-on-surface-variant/50">{item.status.replace('_', ' ')}</p>
+                          <p className="mt-1 text-sm font-black text-fb-on-surface">{item.count}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex min-h-[260px] flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-fb-outline-variant/20 bg-fb-surface-container-lowest p-8 text-center">
+                  <BarChart3 className="mb-4 h-10 w-10 text-fb-outline opacity-40" />
+                  <p className="text-sm font-black uppercase tracking-widest text-fb-on-surface">No Donation Activity Yet</p>
+                  <p className="mt-2 max-w-sm text-xs font-medium text-fb-on-surface-variant">
+                    Your activity chart will fill in after you create donations. Active, delivered, and cancelled donations will all be counted.
+                  </p>
+                </div>
+              )}
             </div>
           </Card>
-
-          {/* AI Suggestion (AI) */}
-          <div className="relative group overflow-hidden rounded-[2.5rem] bg-[#0f5238] p-8 shadow-lg">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32 transition-transform duration-700 group-hover:scale-110" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-md">
-                  <Zap className="w-5 h-5 text-[#95d5b2]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-tight">AI Suggestion</h3>
-                  <p className="text-[10px] font-black text-[#95d5b2] uppercase tracking-[0.2em] opacity-60">Donation Insights</p>
-                </div>
-              </div>
-              <p className="text-lg font-medium text-white/90 leading-relaxed tracking-tight italic">
-                "Your donations are often matched faster when pickup windows are clear and notes include storage details."
-              </p>
-              <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
-                <div className="flex gap-8">
-                  <div>
-                    <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Confidence</p>
-                    <p className="text-sm font-black text-[#95d5b2]">94.2%</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Optimisation</p>
-                    <p className="text-sm font-black text-[#95d5b2]">+12.5%</p>
-                  </div>
-                </div>
-                <button className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-2xl text-[10px] font-black text-white uppercase tracking-widest transition-all">
-                  Apply Strategy
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* List Column */}

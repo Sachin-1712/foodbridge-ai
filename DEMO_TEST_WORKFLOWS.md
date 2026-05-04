@@ -341,3 +341,34 @@ npm run build
 ```
 
 Result: Passed on 2026-05-04.
+
+## Pre-Phase 9 Cleanup Smoke Test
+
+Purpose: verify the donor dashboard cleanup, NGO marketplace wrapping, chatbot availability, and core workflow before starting login changes.
+
+Validated checks:
+
+- Donor dashboard data API returned seeded donor donations with real statuses:
+  - `open`
+  - `pickup_assigned`
+  - `delivered`
+  - `cancelled`
+- Donor activity chart now derives from donation rows when donor analytics are not passed.
+- Donor dashboard no longer includes the large standalone `AI Suggestion` panel.
+- NGO marketplace card/detail layout now wraps long title, food type, pickup location, notes, and match suggestion content instead of clipping it.
+- Donor chatbot, NGO chatbot, and delivery chatbot endpoint checks each returned 200.
+- Donor -> NGO -> delivery smoke test:
+  - donor created `Cleanup Workflow Test Packs`
+  - NGO accepted it
+  - delivery job appeared
+  - delivery status updated to `in_transit`
+  - donor view reflected `in_transit`
+- `npm run seed:demo` was run after the smoke test to restore the Bangalore baseline.
+
+Build check:
+
+```bash
+npm run build
+```
+
+Result: Passed on 2026-05-05.
