@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -282,16 +283,16 @@ export function NGOAnalytics({ stats, analytics, donations, zoneDonations = dona
                     AI-assisted prediction based on recent donation patterns.
                   </CardDescription>
                 </div>
-                <div className="max-w-md rounded-3xl bg-[#0f5238] p-5 text-white shadow-sm">
+                <div className="min-h-[132px] max-w-md rounded-3xl bg-[#0f5238] p-5 text-white shadow-sm">
                   <div className="mb-3 flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-[#95d5b2]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#95d5b2]">Top Insight</span>
                   </div>
-                  <p className="text-sm font-semibold leading-relaxed">{topZoneInsight}</p>
+                  <TypewriterText text={topZoneInsight} className="text-sm font-semibold leading-relaxed" />
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="px-8 pb-8">
+            <CardContent className="px-6 pb-6 lg:px-8 lg:pb-8">
               {zoneInsights.length === 0 ? (
                 <div className="flex min-h-[260px] flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-fb-outline-variant/20 bg-white/50 text-center">
                   <MapPin className="mb-4 h-10 w-10 text-fb-outline opacity-40" />
@@ -301,40 +302,73 @@ export function NGOAnalytics({ stats, analytics, donations, zoneDonations = dona
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
-                  <div className="xl:col-span-3">
-                    <div className="relative h-[360px] overflow-hidden rounded-[2rem] border border-fb-outline-variant/10 bg-[#eef4ec] shadow-inner">
-                      <div className="absolute inset-0 opacity-50" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(15,82,56,0.18) 1px, transparent 0)', backgroundSize: '26px 26px' }} />
-                      <div className="absolute left-8 top-8 rounded-2xl bg-white/80 px-4 py-3 shadow-sm backdrop-blur">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant">Bangalore Map Panel</p>
-                        <p className="mt-1 text-xs font-bold text-fb-primary">Top zones from current Supabase rows</p>
+                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.35fr)_380px]">
+                  <div className="relative h-[430px] overflow-hidden rounded-[2rem] border border-fb-outline-variant/10 bg-[#e8eee7] shadow-inner">
+                    <iframe
+                      title="Bangalore donation zones map"
+                      src="https://maps.google.com/maps?q=Bangalore%2C%20Karnataka%2C%20India&z=11&output=embed"
+                      className="absolute inset-0 h-full w-full grayscale-[0.15] contrast-[1.08] opacity-80"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-[#f8f9f5]/80 pointer-events-none" />
+
+                    <div className="absolute left-5 top-5 right-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="rounded-2xl bg-white/90 px-4 py-3 shadow-ambient-1 backdrop-blur">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant">Bangalore Zone Map</p>
+                        <p className="mt-1 text-xs font-bold text-fb-primary">Markers show current donation density</p>
                       </div>
-                      {zoneInsights.slice(0, 8).map((zone, index) => (
-                        <div
-                          key={zone.area}
-                          className="absolute -translate-x-1/2 -translate-y-1/2"
-                          style={{ left: `${zone.x}%`, top: `${zone.y}%` }}
-                        >
-                          <div className={`flex h-10 w-10 items-center justify-center rounded-full border-4 border-white text-xs font-black shadow-lg ${index === 0 ? 'bg-fb-primary text-white' : zone.urgencyLevel === 'High' ? 'bg-amber-500 text-white' : 'bg-white text-fb-primary'}`}>
+                      <a
+                        href="https://www.google.com/maps/search/?api=1&query=Bangalore%2C%20Karnataka%2C%20India"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl bg-white/90 px-4 text-[10px] font-black uppercase tracking-widest text-fb-primary shadow-ambient-1 backdrop-blur hover:bg-white"
+                      >
+                        <Navigation className="h-3.5 w-3.5" />
+                        Open Map
+                      </a>
+                    </div>
+
+                    {zoneInsights.slice(0, 8).map((zone, index) => (
+                      <div
+                        key={zone.area}
+                        className="absolute -translate-x-1/2 -translate-y-1/2"
+                        style={{ left: `${zone.x}%`, top: `${zone.y}%` }}
+                      >
+                        <div className="flex items-center gap-2 rounded-full bg-white/95 p-1.5 pr-3 shadow-ambient-2 ring-1 ring-fb-outline-variant/10 backdrop-blur">
+                          <div className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-black ${index === 0 ? 'bg-fb-primary text-white' : zone.urgencyLevel === 'High' ? 'bg-amber-500 text-white' : 'bg-fb-surface-container text-fb-primary'}`}>
                             {zone.donationCount}
                           </div>
-                          <div className="mt-1 whitespace-nowrap rounded-full bg-white/90 px-2 py-1 text-[9px] font-black text-fb-on-surface shadow-sm">
-                            {zone.area}
+                          <div className="min-w-0">
+                            <p className="max-w-[112px] truncate text-[10px] font-black text-fb-on-surface">{zone.area}</p>
+                            <p className="text-[8px] font-black uppercase tracking-widest text-fb-on-surface-variant/50">{zone.activeCount} active</p>
                           </div>
                         </div>
-                      ))}
-                      <div className="absolute bottom-6 left-6 right-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <MiniPrediction label="Highest Activity" value={topZone?.area || 'Waiting'} />
-                        <MiniPrediction label="Needs Attention" value={urgentZone?.area || 'No urgent zone'} />
-                        <MiniPrediction label="Next Pickup" value={nextPickupZone?.area || 'Waiting'} />
                       </div>
+                    ))}
+
+                    <div className="absolute bottom-5 left-5 right-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <MiniPrediction label="Highest Activity" value={topZone?.area || 'Waiting'} />
+                      <MiniPrediction label="Needs Attention" value={urgentZone?.area || 'No urgent zone'} />
+                      <MiniPrediction label="Next Pickup" value={nextPickupZone?.area || 'Waiting'} />
                     </div>
                   </div>
 
-                  <div className="grid gap-4 xl:col-span-2">
-                    {zoneInsights.slice(0, 4).map((zone) => (
-                      <ZoneInsightCard key={zone.area} zone={zone} />
-                    ))}
+                  <div className="rounded-[2rem] border border-fb-outline-variant/10 bg-white p-4 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fb-on-surface-variant">Zone Queue</p>
+                        <p className="mt-1 text-xs font-bold text-fb-on-surface">Scrollable ranked list</p>
+                      </div>
+                      <Badge className="border-none bg-fb-primary/10 text-[10px] font-black text-fb-primary">
+                        {zoneInsights.length} zones
+                      </Badge>
+                    </div>
+
+                    <div className="h-[358px] space-y-3 overflow-y-auto pr-2 custom-scrollbar">
+                      {zoneInsights.map((zone) => (
+                        <ZoneInsightCard key={zone.area} zone={zone} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -666,54 +700,89 @@ function KPIStoreCard({
 
 function MiniPrediction({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-white/90 p-3 shadow-sm backdrop-blur">
+    <div className="rounded-2xl bg-white/95 p-3 shadow-ambient-1 backdrop-blur">
       <p className="text-[8px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">{label}</p>
       <p className="mt-1 truncate text-sm font-black text-fb-on-surface">{value}</p>
     </div>
   );
 }
 
+function TypewriterText({ text, className }: { text: string; className?: string }) {
+  const [displayText, setDisplayText] = useState(text);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setDisplayText(text);
+      return;
+    }
+
+    let index = 0;
+    setDisplayText('');
+    const timer = window.setInterval(() => {
+      index += 1;
+      setDisplayText(text.slice(0, index));
+      if (index >= text.length) {
+        window.clearInterval(timer);
+      }
+    }, 18);
+
+    return () => window.clearInterval(timer);
+  }, [text]);
+
+  return (
+    <p className={`relative ${className || ''}`} aria-live="polite">
+      <span aria-hidden="true" className="invisible block">{text}</span>
+      <span className="absolute inset-0 block">
+        {displayText}
+        {displayText.length < text.length && (
+          <span className="ml-0.5 inline-block h-4 w-1 translate-y-0.5 animate-pulse rounded-full bg-[#95d5b2]" />
+        )}
+      </span>
+    </p>
+  );
+}
+
 function ZoneInsightCard({ zone }: { zone: ZoneInsight }) {
   return (
-    <div className="rounded-[1.75rem] border border-fb-outline-variant/10 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-lg font-black tracking-tight text-fb-on-surface">{zone.area}</p>
-          <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant/50">
+    <div className="rounded-[1.35rem] border border-fb-outline-variant/10 bg-fb-surface-container-lowest p-4 shadow-sm">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-base font-black tracking-tight text-fb-on-surface">{zone.area}</p>
+          <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-fb-on-surface-variant/50">
             {zone.donationCount} donations / {zone.totalQuantity} meals
           </p>
         </div>
-        <Badge className={`border-none text-[9px] font-black uppercase tracking-widest ${zone.urgencyLevel === 'High' ? 'bg-amber-100 text-amber-700' : zone.urgencyLevel === 'Medium' ? 'bg-fb-primary/10 text-fb-primary' : 'bg-fb-surface-container text-fb-on-surface-variant'}`}>
+        <Badge className={`shrink-0 border-none text-[8px] font-black uppercase tracking-widest ${zone.urgencyLevel === 'High' ? 'bg-amber-100 text-amber-700' : zone.urgencyLevel === 'Medium' ? 'bg-fb-primary/10 text-fb-primary' : 'bg-fb-surface-container text-fb-on-surface-variant'}`}>
           {zone.urgencyLevel}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <ZoneMetric icon={Utensils} label="Common food" value={zone.commonFoodType} />
-        <ZoneMetric icon={Activity} label="Active/open" value={zone.activeCount.toString()} />
-        <ZoneMetric icon={Package} label="Completed" value={zone.completedCount.toString()} />
-        <ZoneMetric icon={Timer} label="Peak window" value={zone.predictedPeakWindow} />
+      <div className="grid grid-cols-3 gap-2">
+        <CompactZoneMetric icon={Utensils} label="Common" value={zone.commonFoodType} />
+        <CompactZoneMetric icon={Activity} label="Active" value={zone.activeCount.toString()} />
+        <CompactZoneMetric icon={Timer} label="Peak" value={zone.predictedPeakWindow} />
       </div>
 
-      <div className="mt-4 rounded-2xl bg-fb-surface-container-low p-4">
-        <div className="mb-2 flex items-center gap-2">
+      <div className="mt-3 rounded-2xl bg-white p-3">
+        <div className="mb-1.5 flex items-center gap-2">
           {zone.urgencyLevel === 'High' ? <AlertTriangle className="h-4 w-4 text-amber-600" /> : <Navigation className="h-4 w-4 text-fb-primary" />}
-          <span className="text-[9px] font-black uppercase tracking-widest text-fb-on-surface-variant">Recommendation</span>
+          <span className="text-[8px] font-black uppercase tracking-widest text-fb-on-surface-variant">Recommendation</span>
         </div>
-        <p className="text-xs font-semibold leading-relaxed text-fb-on-surface-variant">{zone.recommendation}</p>
+        <p className="line-clamp-2 text-[11px] font-semibold leading-relaxed text-fb-on-surface-variant">{zone.recommendation}</p>
       </div>
     </div>
   );
 }
 
-function ZoneMetric({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+function CompactZoneMetric({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-fb-surface-container-low p-3">
-      <div className="mb-2 flex items-center gap-1.5 text-fb-on-surface-variant/50">
-        <Icon className="h-3.5 w-3.5" />
-        <span className="text-[8px] font-black uppercase tracking-widest">{label}</span>
+    <div className="min-w-0 rounded-xl bg-white p-2.5">
+      <div className="mb-1.5 flex items-center gap-1 text-fb-on-surface-variant/50">
+        <Icon className="h-3 w-3" />
+        <span className="text-[7px] font-black uppercase tracking-widest">{label}</span>
       </div>
-      <p className="truncate text-xs font-black text-fb-on-surface">{value}</p>
+      <p className="truncate text-[11px] font-black text-fb-on-surface">{value}</p>
     </div>
   );
 }

@@ -231,6 +231,14 @@ Phase 7 verification:
 - Empty-data handling is present with a no-zone-data state.
 - `npm run build` passed.
 
+Phase 7 UI refinement:
+
+- Replaced the earlier fake zone panel with a Bangalore-centered map-style panel.
+- Added clear labelled marker chips for top zones.
+- Moved all zone items into one fixed-height scrollable list.
+- Made zone cards compact while preserving area, count, common food, active count, peak window, and recommendation.
+- Added a hydration-safe typewriter animation for the top insight with reduced-motion support.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.
