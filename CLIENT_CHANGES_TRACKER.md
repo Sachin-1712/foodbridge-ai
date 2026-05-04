@@ -68,12 +68,13 @@ Status key:
   - Visible app branding, metadata, chatbot labels, README, and setup/deployment docs now use Sharebite.
   - Database table names should not be renamed unless necessary.
 
-- [~] 9. Role-based login/access control
+- [x] 9. Role-based login/access control
   - Dashboard pages redirect users based on `profiles.role`.
-  - Login currently auto-logs in from role cards using legacy demo emails.
   - Phase 1 added API role checks for donor donation creation, NGO accept/reject, and delivery job updates.
-  - Login still needs selected-role verification in Phase 9.
-  - Planned demo accounts:
+  - Login now requires selecting a role and entering email/password.
+  - `/api/auth` verifies the selected role against `profiles.role` before setting the session cookie.
+  - Wrong role selection is blocked with a clear role mismatch error.
+  - Active demo accounts:
     - `donor@sharebite.demo` / `demo123`
     - `ngo@sharebite.demo` / `demo123`
     - `delivery@sharebite.demo` / `demo123`
@@ -106,7 +107,7 @@ Status key:
 - [x] Phase 6 - Add food photo upload.
 - [x] Phase 7 - Add donation zones and predictive insights.
 - [x] Phase 8 - Improve role-specific Sharebite AI assistant.
-- [ ] Phase 9 - Add role-verified demo login.
+- [x] Phase 9 - Add role-verified demo login.
 - [ ] Phase 10 - Final UI polish and deployment readiness.
 
 ## Current Phase 0 Notes
@@ -141,7 +142,7 @@ Status key:
 - Added `npm run seed:demo` as the safe Supabase demo reseed command.
 - The reseed deletes only known demo rows before recreating profiles, NGO profiles, donations, match suggestions, delivery jobs, and analytics snapshots.
 - Seeded examples now cover `open`, `accepted`, `pickup_assigned`, `in_transit`, `delivered`, and `cancelled`.
-- Current login behavior and demo emails are intentionally unchanged until Phase 9.
+- Phase 9 now replaces the legacy auto-login behavior with role-verified Sharebite demo login.
 - `npm run seed:demo` passed and `npm run build` passed after the Phase 3 changes.
 
 ## Current Phase 4 Notes
@@ -203,3 +204,23 @@ Status key:
 - Gemini remains optional and only rewrites deterministic answers; fallback responses still work without Gemini.
 - Expanded Bangalore demo seed data to 18 profiles, 15 donations, 14 match suggestions, 6 delivery jobs, and 42 analytics snapshots.
 - `npm run seed:demo` passed, endpoint tests passed, the cross-role workflow test passed, and `npm run build` passed.
+
+## Current Phase 9 Notes
+
+- Replaced auto-login role cards with a role-selected email/password demo login.
+- Login page shows Sharebite branding and the three roles:
+  - Donor
+  - NGO
+  - Delivery Partner
+- Auth API checks the submitted selected role against the Supabase `profiles.role` value before creating a session.
+- Wrong-role attempts are blocked; tested example:
+  - donor account + NGO role returned `This account is not registered as an NGO.`
+- Dashboard sidebar now shows verified role labels:
+  - Verified Donor
+  - Verified NGO
+  - Verified Delivery Partner
+- Seed data now uses:
+  - `donor@sharebite.demo` / `demo123`
+  - `ngo@sharebite.demo` / `demo123`
+  - `delivery@sharebite.demo` / `demo123`
+- `npm run seed:demo` passed, role login tests passed, chatbot checks passed, donor -> NGO -> delivery workflow passed, and `npm run build` passed.

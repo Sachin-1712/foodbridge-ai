@@ -35,13 +35,15 @@ The script deletes demo-only rows connected to known demo profile ids, seeded do
 
 It does not intentionally delete unrelated production or manually-created rows.
 
-## Demo Accounts Kept For Current Login
+## Demo Login Accounts
 
-Phase 9 will update the visible login experience to Sharebite demo emails. Until then, the app still uses the existing demo login accounts:
+Phase 9 uses role-verified Sharebite demo login. Select the matching role before submitting the email/password:
 
-- Donor: `donor@foodbridge.demo` / `demo123`
-- NGO: `ngo@foodbridge.demo` / `demo123`
-- Delivery: `delivery@foodbridge.demo` / `demo123`
+- Donor: `donor@sharebite.demo` / `demo123`
+- NGO: `ngo@sharebite.demo` / `demo123`
+- Delivery Partner: `delivery@sharebite.demo` / `demo123`
+
+Wrong role selection is intentionally blocked. For example, selecting NGO while using the donor account returns: `This account is not registered as an NGO.`
 
 ## Bangalore Demo Organizations
 

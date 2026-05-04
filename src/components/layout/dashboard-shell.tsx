@@ -58,9 +58,9 @@ export function DashboardShell({ children, user }: { children: React.ReactNode; 
   };
 
   const roleBadge = {
-    donor: { label: 'Donor', bg: 'bg-[#b1f0ce]', text: 'text-[#002114]' },
-    ngo: { label: 'NGO', bg: 'bg-[#e1e6c2]', text: 'text-[#464a30]' },
-    delivery: { label: 'Driver', bg: 'bg-[#ffdcbd]', text: 'text-[#7d562d]' },
+    donor: { label: 'Verified Donor', bg: 'bg-[#b1f0ce]', text: 'text-[#002114]' },
+    ngo: { label: 'Verified NGO', bg: 'bg-[#e1e6c2]', text: 'text-[#464a30]' },
+    delivery: { label: 'Verified Delivery Partner', bg: 'bg-[#ffdcbd]', text: 'text-[#7d562d]' },
   }[user.role];
 
   return (

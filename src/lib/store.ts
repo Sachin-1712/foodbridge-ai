@@ -128,7 +128,7 @@ export async function getFirstDeliveryPartner(): Promise<User | undefined> {
 
   if (!data || data.length === 0) return undefined;
 
-  const seededDeliveryUser = data.find((row: any) => row.email === 'delivery@foodbridge.demo');
+  const seededDeliveryUser = data.find((row: any) => row.email === 'delivery@sharebite.demo');
   return mapUser(seededDeliveryUser || data[0]);
 }
 

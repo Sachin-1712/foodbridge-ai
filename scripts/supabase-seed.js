@@ -98,7 +98,7 @@ const seedUsers = [
   {
     id: ids.donors.koramangala,
     name: 'Asha Rao',
-    email: 'donor@foodbridge.demo',
+    email: 'donor@sharebite.demo',
     password: 'demo123',
     role: 'donor',
     organization_name: 'Koramangala Kitchen',
@@ -219,7 +219,7 @@ const seedUsers = [
   {
     id: ids.ngos.reliefTrust,
     name: 'Priya Menon',
-    email: 'ngo@foodbridge.demo',
+    email: 'ngo@sharebite.demo',
     password: 'demo123',
     role: 'ngo',
     organization_name: 'Bengaluru Food Relief Trust',
@@ -230,7 +230,7 @@ const seedUsers = [
   {
     id: ids.ngos.helpingHands,
     name: 'Ananya Reddy',
-    email: 'ngo2@foodbridge.demo',
+    email: 'ngo2@sharebite.demo',
     password: 'demo123',
     role: 'ngo',
     organization_name: 'Helping Hands Bangalore',
@@ -274,7 +274,7 @@ const seedUsers = [
   {
     id: ids.delivery,
     name: 'Vikram Das',
-    email: 'delivery@foodbridge.demo',
+    email: 'delivery@sharebite.demo',
     password: 'demo123',
     role: 'delivery',
     organization_name: 'Bangalore Delivery Collective',

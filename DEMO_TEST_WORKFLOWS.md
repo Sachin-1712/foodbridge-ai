@@ -1,6 +1,6 @@
 # Demo Test Workflows
 
-Last updated: 2026-05-03
+Last updated: 2026-05-05
 
 ## Phase 1 Workflow Test
 
@@ -41,11 +41,11 @@ Validated checks:
 
 ## Manual Demo Steps For Phase 1
 
-Use the current legacy demo accounts until the Phase 9 Sharebite login change is implemented:
+Use the current Phase 9 role-verified demo accounts:
 
-- Donor: `donor@foodbridge.demo` / `demo123`
-- NGO: `ngo@foodbridge.demo` / `demo123`
-- Delivery: `delivery@foodbridge.demo` / `demo123`
+- Donor: `donor@sharebite.demo` / `demo123`
+- NGO: `ngo@sharebite.demo` / `demo123`
+- Delivery Partner: `delivery@sharebite.demo` / `demo123`
 
 Steps:
 
@@ -86,26 +86,26 @@ Expected result:
 
 - Demo-only rows are reset.
 - Bangalore profiles, NGO profiles, donations, match suggestions, delivery jobs, and analytics snapshots are recreated.
-- Existing demo login emails remain available until Phase 9 changes the login flow.
+- Phase 9 demo login emails are available and role-verified.
 
-Actual result: Passed on 2026-05-03.
+Actual result: Passed on 2026-05-05.
 
 Seeded rows:
 
-- Profiles: 14
+- Profiles: 18
 - NGO profiles: 5
-- Donations: 9
-- Match suggestions: 8
-- Delivery jobs: 4
-- Analytics snapshots: 14
+- Donations: 15
+- Match suggestions: 14
+- Delivery jobs: 6
+- Analytics snapshots: 42
 
 ### Dashboard Checks
 
-Use the current demo accounts:
+Use the current role-verified demo accounts:
 
-- Donor: `donor@foodbridge.demo` / `demo123`
-- NGO: `ngo@foodbridge.demo` / `demo123`
-- Delivery: `delivery@foodbridge.demo` / `demo123`
+- Donor: `donor@sharebite.demo` / `demo123`
+- NGO: `ngo@sharebite.demo` / `demo123`
+- Delivery Partner: `delivery@sharebite.demo` / `demo123`
 
 Donor dashboard:
 
@@ -173,7 +173,7 @@ Validated checks:
 - Delivery job status updated in Supabase after each API call.
 - Related donation status synced to `delivered`.
 - Donor view for `donor-electronic-city@sharebite.demo` reflected `delivered`.
-- NGO view for `ngo2@foodbridge.demo` reflected `delivered`.
+- NGO view for `ngo2@sharebite.demo` reflected `delivered`.
 - Delivered job left the active delivery list.
 - Delivery user changed status to `cancelled`; job left active delivery list.
 - Test job was restored to `assigned`; donation returned to `pickup_assigned` for the demo baseline.

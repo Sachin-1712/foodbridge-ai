@@ -308,6 +308,43 @@ Cleanup verification:
 - Donor -> NGO -> delivery workflow smoke test passed and synced the test donation to `in_transit`.
 - `npm run seed:demo` was run after testing to restore the Bangalore demo baseline.
 
+## Phase 9 Complete: Role-Verified Demo Login
+
+Sharebite now uses selected-role verification during demo login.
+
+Phase 9 changes:
+
+- Replaced auto-login role cards with a role selection plus email/password form.
+- Login page includes Sharebite branding and three roles:
+  - Donor
+  - NGO
+  - Delivery Partner
+- `/api/auth` now requires `selectedRole` and checks it against the Supabase `profiles.role` value before creating a session.
+- Wrong-role login attempts are blocked with a clear error such as: `This account is not registered as an NGO.`
+- Successful login routes to the dashboard for the verified profile role.
+- Dashboard user badges now show:
+  - Verified Donor
+  - Verified NGO
+  - Verified Delivery Partner
+- Demo seed data now uses the Phase 9 accounts:
+  - `donor@sharebite.demo` / `demo123`
+  - `ngo@sharebite.demo` / `demo123`
+  - `delivery@sharebite.demo` / `demo123`
+- Delivery partner assignment lookup now prefers `delivery@sharebite.demo`.
+
+Phase 9 verification:
+
+- `npm run seed:demo` passed and recreated 18 profiles, 5 NGO profiles, 15 donations, 14 match suggestions, 6 delivery jobs, and 42 analytics snapshots.
+- Donor login with donor role passed.
+- NGO login with NGO role passed.
+- Delivery login with delivery role passed.
+- Wrong role selection was blocked with the expected NGO error.
+- Donor, NGO, and delivery dashboard requests returned 200.
+- Donor, NGO, and delivery chatbot endpoint checks returned 200.
+- Donor -> NGO -> delivery workflow smoke test passed and synced the test donation to `in_transit`.
+- `npm run seed:demo` was run again after workflow testing to restore the Bangalore baseline.
+- `npm run build` passed.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.
