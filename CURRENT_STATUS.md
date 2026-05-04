@@ -239,6 +239,20 @@ Phase 7 UI refinement:
 - Made zone cards compact while preserving area, count, common food, active count, peak window, and recommendation.
 - Added a hydration-safe typewriter animation for the top insight with reduced-motion support.
 
+Donation Zones layout cleanup:
+
+- Replaced artificial overlaid marker chips with a cleaner Bangalore map context panel and an "Open in Google Maps" action.
+- Added a transparent 0-100 rule-based prediction score for each zone:
+  - recent donation count: 40%
+  - active/open donations: 25%
+  - urgent donations: 15%
+  - repeated/common food category pattern: 10%
+  - peak time consistency: 10%
+- Added High, Medium, and Low predicted activity labels using the requested score bands.
+- Added a "How prediction works" note that states the feature uses recent Bangalore donation patterns, not a trained ML model.
+- Moved Top Partnerships, Impact Mix, Response Trends, and compact impact stats into the right analytics column.
+- Kept the compact Top Insight typewriter animation inside the Donation Zones section.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.

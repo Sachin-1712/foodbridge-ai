@@ -19,10 +19,10 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Leaf,
-  Target,
   MapPin,
   Navigation,
   AlertTriangle,
+  Info,
 } from 'lucide-react';
 import {
   BarChart,
@@ -66,17 +66,17 @@ const categoryLabels: Record<string, string> = {
 };
 
 const bangaloreZones = [
-  { name: 'Koramangala', x: 39, y: 58 },
-  { name: 'Indiranagar', x: 55, y: 47 },
-  { name: 'Jayanagar', x: 38, y: 70 },
-  { name: 'Whitefield', x: 78, y: 42 },
-  { name: 'HSR Layout', x: 52, y: 66 },
-  { name: 'MG Road', x: 47, y: 43 },
-  { name: 'Electronic City', x: 58, y: 82 },
-  { name: 'JP Nagar', x: 35, y: 76 },
-  { name: 'Malleshwaram', x: 31, y: 30 },
-  { name: 'Marathahalli', x: 68, y: 55 },
-  { name: 'Hebbal', x: 43, y: 18 },
+  { name: 'Koramangala' },
+  { name: 'Indiranagar' },
+  { name: 'Jayanagar' },
+  { name: 'Whitefield' },
+  { name: 'HSR Layout' },
+  { name: 'MG Road' },
+  { name: 'Electronic City' },
+  { name: 'JP Nagar' },
+  { name: 'Malleshwaram' },
+  { name: 'Marathahalli' },
+  { name: 'Hebbal' },
 ];
 
 type ZoneInsight = {
@@ -87,10 +87,10 @@ type ZoneInsight = {
   activeCount: number;
   completedCount: number;
   urgencyLevel: 'High' | 'Medium' | 'Low';
+  predictionScore: number;
+  predictionLevel: 'High' | 'Medium' | 'Low';
   predictedPeakWindow: string;
   recommendation: string;
-  x: number;
-  y: number;
 };
 
 const activeStatuses = ['open', 'accepted', 'pickup_assigned', 'picked_up', 'in_transit'];
@@ -117,18 +117,29 @@ const mostCommon = (items: string[], fallback: string) => {
   return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || fallback;
 };
 
+const topCount = (items: string[]) => {
+  if (items.length === 0) return 0;
+  const counts = items.reduce<Record<string, number>>((acc, item) => {
+    acc[item] = (acc[item] || 0) + 1;
+    return acc;
+  }, {});
+  return Object.values(counts).sort((a, b) => b - a)[0] || 0;
+};
+
 function buildZoneInsights(donations: Donation[]): ZoneInsight[] {
-  return bangaloreZones
+  const rawZones = bangaloreZones
     .map((zone) => {
       const zoneDonations = donations.filter((donation) => detectZone(donation) === zone.name);
       const active = zoneDonations.filter((donation) => activeStatuses.includes(donation.status));
       const urgentActive = active.filter((donation) => donation.urgency === 'high');
       const completed = zoneDonations.filter((donation) => donation.status === 'delivered');
+      const foodTypes = zoneDonations.map((donation) => donation.foodType || categoryLabels[donation.category] || donation.category);
+      const windowLabels = zoneDonations.map(getWindowLabel);
       const commonFoodType = mostCommon(
-        zoneDonations.map((donation) => donation.foodType || categoryLabels[donation.category] || donation.category),
+        foodTypes,
         'Mixed food'
       );
-      const predictedPeakWindow = mostCommon(zoneDonations.map(getWindowLabel), 'Afternoon');
+      const predictedPeakWindow = mostCommon(windowLabels, 'Afternoon');
       const urgencyLevel: ZoneInsight['urgencyLevel'] = urgentActive.length > 0 ? 'High' : active.length > 0 ? 'Medium' : 'Low';
       let recommendation = `Plan ${predictedPeakWindow.toLowerCase()} pickup capacity for ${commonFoodType}.`;
 
@@ -147,15 +158,47 @@ function buildZoneInsights(donations: Donation[]): ZoneInsight[] {
         commonFoodType,
         activeCount: active.length,
         completedCount: completed.length,
+        urgentCount: urgentActive.length,
+        commonFoodPattern: zoneDonations.length > 0 ? topCount(foodTypes) / zoneDonations.length : 0,
+        peakConsistency: zoneDonations.length > 0 ? topCount(windowLabels) / zoneDonations.length : 0,
         urgencyLevel,
         predictedPeakWindow,
         recommendation,
-        x: zone.x,
-        y: zone.y,
       };
     })
-    .filter((zone) => zone.donationCount > 0)
+    .filter((zone) => zone.donationCount > 0);
+
+  const maxDonationCount = Math.max(...rawZones.map((zone) => zone.donationCount), 1);
+  const maxActiveCount = Math.max(...rawZones.map((zone) => zone.activeCount), 1);
+  const maxUrgentCount = Math.max(...rawZones.map((zone) => zone.urgentCount), 1);
+
+  return rawZones
+    .map((zone) => {
+      const predictionScore = Math.round(
+        (zone.donationCount / maxDonationCount) * 40 +
+        (zone.activeCount / maxActiveCount) * 25 +
+        (zone.urgentCount / maxUrgentCount) * 15 +
+        zone.commonFoodPattern * 10 +
+        zone.peakConsistency * 10
+      );
+      const predictionLevel: ZoneInsight['predictionLevel'] = predictionScore >= 75 ? 'High' : predictionScore >= 45 ? 'Medium' : 'Low';
+
+      return {
+        area: zone.area,
+        donationCount: zone.donationCount,
+        totalQuantity: zone.totalQuantity,
+        commonFoodType: zone.commonFoodType,
+        activeCount: zone.activeCount,
+        completedCount: zone.completedCount,
+        urgencyLevel: zone.urgencyLevel,
+        predictionScore,
+        predictionLevel,
+        predictedPeakWindow: zone.predictedPeakWindow,
+        recommendation: zone.recommendation,
+      };
+    })
     .sort((a, b) => {
+      if (b.predictionScore !== a.predictionScore) return b.predictionScore - a.predictionScore;
       if (b.donationCount !== a.donationCount) return b.donationCount - a.donationCount;
       return b.activeCount - a.activeCount;
     });
@@ -187,14 +230,12 @@ export function NGOAnalytics({ stats, analytics, donations, zoneDonations = dona
   const co2Saved = (stats.mealsRescued * 2.5).toFixed(1); // 2.5kg CO2 per meal (est)
   const waterSaved = (stats.mealsRescued * 150).toLocaleString(); // 150L per meal (est)
 
-  const aiInsight = `Your organisation has rescued ${stats.mealsRescued} meals this period, with cooked meals being the most common category (${Math.round((categoryCount['Cooked Meals'] || 0) / Math.max(donations.length, 1) * 100)}% of total). Donation volume peaks mid-week, suggesting restaurants clear surplus after weekend prep. Consider increasing capacity on Wednesdays and Thursdays to capture more donations. Your average response time of ${stats.avgAcceptanceMinutes} minutes is excellent — maintaining this will improve your match scores.`;
-
   const zoneInsights = buildZoneInsights(zoneDonations);
   const topZone = zoneInsights[0];
   const urgentZone = zoneInsights.find((zone) => zone.urgencyLevel === 'High' && zone.activeCount > 0);
   const nextPickupZone = zoneInsights.find((zone) => zone.activeCount > 0) || topZone;
   const topZoneInsight = topZone
-    ? `${topZone.area} is the highest activity zone. Keep NGO pickup capacity ready in the ${topZone.predictedPeakWindow.toLowerCase()} for ${topZone.commonFoodType} donations.`
+    ? `${topZone.area} has ${topZone.predictionLevel.toLowerCase()} predicted activity with a ${topZone.predictionScore}/100 score. Keep NGO pickup capacity ready in the ${topZone.predictedPeakWindow.toLowerCase()} for ${topZone.commonFoodType} donations.`
     : 'No Bangalore donation rows are available yet. Zone predictions will appear after donors create donations.';
 
   const chartTooltipStyle = {
@@ -282,8 +323,11 @@ export function NGOAnalytics({ stats, analytics, donations, zoneDonations = dona
                   <CardDescription className="text-fb-on-surface-variant text-sm font-medium">
                     AI-assisted prediction based on recent donation patterns.
                   </CardDescription>
+                  <p className="mt-2 max-w-xl text-xs font-semibold leading-relaxed text-fb-on-surface-variant/70">
+                    Prediction is based on recent donation count, active donations, urgency, common food type, and pickup-time patterns.
+                  </p>
                 </div>
-                <div className="min-h-[132px] max-w-md rounded-3xl bg-[#0f5238] p-5 text-white shadow-sm">
+                <div className="min-h-[116px] max-w-md rounded-3xl bg-[#0f5238] p-5 text-white shadow-sm">
                   <div className="mb-3 flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-[#95d5b2]" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#95d5b2]">Top Insight</span>
@@ -302,8 +346,9 @@ export function NGOAnalytics({ stats, analytics, donations, zoneDonations = dona
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.35fr)_380px]">
-                  <div className="relative h-[430px] overflow-hidden rounded-[2rem] border border-fb-outline-variant/10 bg-[#e8eee7] shadow-inner">
+                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.25fr)_390px]">
+                  <div className="grid gap-4">
+                  <div className="relative h-[330px] overflow-hidden rounded-[2rem] border border-fb-outline-variant/10 bg-[#e8eee7] shadow-inner">
                     <iframe
                       title="Bangalore donation zones map"
                       src="https://maps.google.com/maps?q=Bangalore%2C%20Karnataka%2C%20India&z=11&output=embed"
@@ -315,7 +360,7 @@ export function NGOAnalytics({ stats, analytics, donations, zoneDonations = dona
                     <div className="absolute left-5 top-5 right-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="rounded-2xl bg-white/90 px-4 py-3 shadow-ambient-1 backdrop-blur">
                         <p className="text-[10px] font-black uppercase tracking-widest text-fb-on-surface-variant">Bangalore Zone Map</p>
-                        <p className="mt-1 text-xs font-bold text-fb-primary">Markers show current donation density</p>
+                        <p className="mt-1 text-xs font-bold text-fb-primary">City context for the ranked zone list</p>
                       </div>
                       <a
                         href="https://www.google.com/maps/search/?api=1&query=Bangalore%2C%20Karnataka%2C%20India"
@@ -324,47 +369,39 @@ export function NGOAnalytics({ stats, analytics, donations, zoneDonations = dona
                         className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl bg-white/90 px-4 text-[10px] font-black uppercase tracking-widest text-fb-primary shadow-ambient-1 backdrop-blur hover:bg-white"
                       >
                         <Navigation className="h-3.5 w-3.5" />
-                        Open Map
+                        Open in Google Maps
                       </a>
                     </div>
 
-                    {zoneInsights.slice(0, 8).map((zone, index) => (
-                      <div
-                        key={zone.area}
-                        className="absolute -translate-x-1/2 -translate-y-1/2"
-                        style={{ left: `${zone.x}%`, top: `${zone.y}%` }}
-                      >
-                        <div className="flex items-center gap-2 rounded-full bg-white/95 p-1.5 pr-3 shadow-ambient-2 ring-1 ring-fb-outline-variant/10 backdrop-blur">
-                          <div className={`flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-black ${index === 0 ? 'bg-fb-primary text-white' : zone.urgencyLevel === 'High' ? 'bg-amber-500 text-white' : 'bg-fb-surface-container text-fb-primary'}`}>
-                            {zone.donationCount}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="max-w-[112px] truncate text-[10px] font-black text-fb-on-surface">{zone.area}</p>
-                            <p className="text-[8px] font-black uppercase tracking-widest text-fb-on-surface-variant/50">{zone.activeCount} active</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
                     <div className="absolute bottom-5 left-5 right-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      <MiniPrediction label="Highest Activity" value={topZone?.area || 'Waiting'} />
+                      <MiniPrediction label="Highest Score" value={topZone ? `${topZone.area} - ${topZone.predictionScore}` : 'Waiting'} />
                       <MiniPrediction label="Needs Attention" value={urgentZone?.area || 'No urgent zone'} />
                       <MiniPrediction label="Next Pickup" value={nextPickupZone?.area || 'Waiting'} />
                     </div>
+                  </div>
+                  <div className="rounded-[1.5rem] border border-fb-primary/10 bg-fb-primary/5 p-4">
+                    <div className="mb-2 flex items-center gap-2 text-fb-primary">
+                      <Info className="h-4 w-4" />
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em]">How prediction works</p>
+                    </div>
+                    <p className="text-xs font-semibold leading-relaxed text-fb-on-surface-variant">
+                      These suggestions are based on recent Bangalore donation patterns, not a trained ML model. Scores use recent count (40%), active/open donations (25%), urgent donations (15%), common food pattern (10%), and pickup-time consistency (10%).
+                    </p>
+                  </div>
                   </div>
 
                   <div className="rounded-[2rem] border border-fb-outline-variant/10 bg-white p-4 shadow-sm">
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fb-on-surface-variant">Zone Queue</p>
-                        <p className="mt-1 text-xs font-bold text-fb-on-surface">Scrollable ranked list</p>
+                        <p className="mt-1 text-xs font-bold text-fb-on-surface">Ranked by 0-100 prediction score</p>
                       </div>
                       <Badge className="border-none bg-fb-primary/10 text-[10px] font-black text-fb-primary">
                         {zoneInsights.length} zones
                       </Badge>
                     </div>
 
-                    <div className="h-[358px] space-y-3 overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="h-[402px] space-y-3 overflow-y-auto pr-2 custom-scrollbar">
                       {zoneInsights.map((zone) => (
                         <ZoneInsightCard key={zone.area} zone={zone} />
                       ))}
@@ -442,168 +479,10 @@ export function NGOAnalytics({ stats, analytics, donations, zoneDonations = dona
             </CardContent>
           </Card>
 
-          {/* Secondary Impact Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Category Pie Chart */}
-            <Card className="bg-fb-surface-container-lowest border-fb-outline-variant/20 shadow-ambient-1 rounded-[2.5rem]">
-              <CardHeader className="px-8 pt-8">
-                <CardTitle className="text-xl font-[family-name:var(--font-heading)] font-black text-fb-on-surface flex items-center gap-3">
-                  <div className="p-2 bg-fb-primary/10 rounded-xl">
-                    <PieChartIcon className="w-5 h-5 text-fb-primary" />
-                  </div>
-                  Impact Mix
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-8 pb-8">
-                <div className="h-64 mt-4">
-                  {categoryData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={categoryData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={75}
-                          outerRadius={105}
-                          paddingAngle={6}
-                          dataKey="value"
-                          stroke="none"
-                        >
-                          {categoryData.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip contentStyle={chartTooltipStyle} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-sm text-fb-outline font-medium gap-2">
-                      <BarChart3 className="w-8 h-8 opacity-20" />
-                      No data footprint yet
-                    </div>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  {categoryData.slice(0, 4).map((item, i) => (
-                    <div key={item.name} className="flex items-center justify-between p-3 bg-fb-surface-container-low rounded-2xl border border-fb-outline-variant/5">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2 h-2 rounded-full shadow-sm"
-                          style={{ backgroundColor: COLORS[i % COLORS.length] }}
-                        />
-                        <span className="text-xs font-bold text-fb-on-surface-variant truncate w-24">
-                          {item.name}
-                        </span>
-                      </div>
-                      <span className="text-sm font-black text-fb-on-surface">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Efficiency Line Chart */}
-            <Card className="bg-fb-surface-container-lowest border-fb-outline-variant/20 shadow-ambient-1 rounded-[2.5rem]">
-              <CardHeader className="px-8 pt-8">
-                <CardTitle className="text-xl font-[family-name:var(--font-heading)] font-black text-fb-on-surface flex items-center gap-3">
-                  <div className="p-2 bg-fb-secondary/10 rounded-xl">
-                    <Activity className="w-5 h-5 text-fb-secondary" />
-                  </div>
-                  Response Trends
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-8 pb-8">
-                <div className="h-64 mt-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={acceptanceData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="8 8" vertical={false} stroke="#bfc9c1" strokeOpacity={0.2} />
-                      <XAxis dataKey="date" fontSize={11} fontWeight={600} tickLine={false} axisLine={false} stroke="#707973" dy={15} />
-                      <YAxis fontSize={11} fontWeight={600} tickLine={false} axisLine={false} stroke="#707973" />
-                      <Tooltip contentStyle={chartTooltipStyle} />
-                      <Line
-                        type="monotone"
-                        dataKey="minutes"
-                        stroke="#7d562d"
-                        strokeWidth={4}
-                        dot={{ r: 6, fill: '#7d562d', strokeWidth: 0 }}
-                        activeDot={{ r: 9, strokeWidth: 0, fill: '#0f5238' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="mt-8 p-5 bg-gradient-to-r from-fb-primary/10 to-transparent rounded-2xl border border-fb-primary/10 flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fb-primary/60 mb-1">Weekly Delta</p>
-                    <p className="text-sm font-black text-fb-on-surface">Efficiency optimized</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-emerald-600 font-black text-2xl flex items-center gap-1">
-                      <TrendingDown className="w-5 h-5" />
-                      -12%
-                    </div>
-                    <p className="text-[10px] font-bold text-fb-on-surface-variant uppercase">Shorter wait times</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
 
-        {/* Right Column: AI Specialist & Partners (4 cols) */}
+        {/* Right Column: Useful NGO Dashboard Cards (4 cols) */}
         <div className="lg:col-span-4 space-y-8">
-          
-          {/* AI Strategic Specialist Panel */}
-          <Card className="border-none bg-[#0f5238] text-white shadow-ambient-3 rounded-[2.5rem] relative overflow-hidden group">
-            {/* Background Textures */}
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
-            <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-fb-secondary/10 rounded-full blur-2xl" />
-            
-            <CardHeader className="pb-6 pt-10 px-8 relative">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-inner">
-                  <Sparkles className="w-6 h-6 text-fb-primary-fixed" />
-                </div>
-                <div>
-                  <Badge className="bg-white/10 text-white border-white/20 text-[10px] uppercase tracking-widest font-bold mb-1">
-                    Donation Insights
-                  </Badge>
-                  <CardTitle className="text-2xl font-[family-name:var(--font-heading)] font-black tracking-tight">
-                    AI Suggestion
-                  </CardTitle>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-8 px-8 pb-10 relative">
-              <div className="p-6 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-inner">
-                <p className="text-base text-white/90 leading-relaxed font-medium italic">
-                  "{aiInsight}"
-                </p>
-              </div>
-
-              <div className="space-y-5">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 flex items-center gap-2">
-                  <Target className="w-4 h-4" />
-                  Recommended Actions
-                </h4>
-                <div className="grid gap-3">
-                  <StrategicAction icon={Activity} text="Scale Wednesday volunteer routes" />
-                  <StrategicAction icon={Leaf} text="Priority match for expiring dairy" />
-                  <StrategicAction icon={TrendingUp} text="Review Friday morning acceptance" />
-                </div>
-              </div>
-
-              <div className="pt-8 border-t border-white/10">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 mb-4">
-                  Environmental Contribution
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <ImpactStat icon={Leaf} value={`${co2Saved}kg`} label="CO2 Offset" color="bg-emerald-500/20" iconColor="text-emerald-400" />
-                  <ImpactStat icon={Activity} value={waterSaved} label="Water (L)" color="bg-blue-500/20" iconColor="text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Partner Excellence Panel */}
           <Card className="bg-fb-surface-container-lowest border-fb-outline-variant/20 shadow-ambient-1 rounded-[2.5rem]">
@@ -638,6 +517,108 @@ export function NGOAnalytics({ stats, analytics, donations, zoneDonations = dona
               <Button variant="outline" className="w-full rounded-2xl border-fb-outline-variant/30 text-fb-on-surface-variant font-bold text-xs uppercase tracking-widest h-12 hover:bg-fb-surface-container-low transition-all">
                 View All Partners
               </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-fb-surface-container-lowest border-fb-outline-variant/20 shadow-ambient-1 rounded-[2.5rem]">
+            <CardHeader className="px-8 pt-8 pb-3">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.2em] text-fb-outline flex items-center gap-3">
+                <PieChartIcon className="w-4 h-4 text-fb-primary" />
+                Impact Mix
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-8 pb-8">
+              <div className="h-40">
+                {categoryData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={46}
+                        outerRadius={70}
+                        paddingAngle={5}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {categoryData.map((_, index) => (
+                          <Cell key={`compact-cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={chartTooltipStyle} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 text-sm font-medium text-fb-outline">
+                    <BarChart3 className="w-8 h-8 opacity-20" />
+                    No data footprint yet
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-2">
+                {categoryData.slice(0, 4).map((item, i) => (
+                  <div key={item.name} className="flex items-center justify-between rounded-2xl bg-fb-surface-container-low p-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <div
+                        className="h-2 w-2 shrink-0 rounded-full shadow-sm"
+                        style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                      />
+                      <span className="truncate text-xs font-bold text-fb-on-surface-variant">{item.name}</span>
+                    </div>
+                    <span className="text-sm font-black text-fb-on-surface">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-fb-surface-container-lowest border-fb-outline-variant/20 shadow-ambient-1 rounded-[2.5rem]">
+            <CardHeader className="px-8 pt-8 pb-3">
+              <CardTitle className="text-sm font-black uppercase tracking-[0.2em] text-fb-outline flex items-center gap-3">
+                <Activity className="w-4 h-4 text-fb-secondary" />
+                Response Trends
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-8 pb-8">
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={acceptanceData} margin={{ top: 16, right: 10, left: -28, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="8 8" vertical={false} stroke="#bfc9c1" strokeOpacity={0.2} />
+                    <XAxis dataKey="date" fontSize={10} fontWeight={600} tickLine={false} axisLine={false} stroke="#707973" dy={10} />
+                    <YAxis fontSize={10} fontWeight={600} tickLine={false} axisLine={false} stroke="#707973" />
+                    <Tooltip contentStyle={chartTooltipStyle} />
+                    <Line
+                      type="monotone"
+                      dataKey="minutes"
+                      stroke="#7d562d"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: '#7d562d', strokeWidth: 0 }}
+                      activeDot={{ r: 7, strokeWidth: 0, fill: '#0f5238' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4 flex items-center justify-between rounded-2xl border border-fb-primary/10 bg-fb-primary/5 p-4">
+                <div>
+                  <p className="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-fb-primary/60">Weekly Delta</p>
+                  <p className="text-sm font-black text-fb-on-surface">Efficiency optimized</p>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-xl font-black text-emerald-600">
+                    <TrendingDown className="w-4 h-4" />
+                    -12%
+                  </div>
+                  <p className="text-[9px] font-bold uppercase text-fb-on-surface-variant">Shorter waits</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none bg-[#0f5238] text-white shadow-ambient-2 rounded-[2rem]">
+            <CardContent className="grid grid-cols-2 gap-4 p-5">
+              <CompactImpactStat icon={Leaf} value={`${co2Saved}kg`} label="CO2 Offset" />
+              <CompactImpactStat icon={Activity} value={waterSaved} label="Water (L)" />
             </CardContent>
           </Card>
         </div>
@@ -744,6 +725,12 @@ function TypewriterText({ text, className }: { text: string; className?: string 
 }
 
 function ZoneInsightCard({ zone }: { zone: ZoneInsight }) {
+  const levelClasses = zone.predictionLevel === 'High'
+    ? 'bg-emerald-100 text-emerald-700'
+    : zone.predictionLevel === 'Medium'
+      ? 'bg-amber-100 text-amber-700'
+      : 'bg-fb-surface-container text-fb-on-surface-variant';
+
   return (
     <div className="rounded-[1.35rem] border border-fb-outline-variant/10 bg-fb-surface-container-lowest p-4 shadow-sm">
       <div className="mb-3 flex items-start justify-between gap-3">
@@ -753,9 +740,27 @@ function ZoneInsightCard({ zone }: { zone: ZoneInsight }) {
             {zone.donationCount} donations / {zone.totalQuantity} meals
           </p>
         </div>
-        <Badge className={`shrink-0 border-none text-[8px] font-black uppercase tracking-widest ${zone.urgencyLevel === 'High' ? 'bg-amber-100 text-amber-700' : zone.urgencyLevel === 'Medium' ? 'bg-fb-primary/10 text-fb-primary' : 'bg-fb-surface-container text-fb-on-surface-variant'}`}>
-          {zone.urgencyLevel}
+        <Badge className={`shrink-0 border-none text-[8px] font-black uppercase tracking-widest ${levelClasses}`}>
+          {zone.predictionLevel}
         </Badge>
+      </div>
+
+      <div className="mb-3">
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="text-[8px] font-black uppercase tracking-widest text-fb-on-surface-variant/60">
+            Predicted Activity
+          </span>
+          <span className="text-xs font-black text-fb-on-surface">{zone.predictionScore}/100</span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-fb-surface-container">
+          <div
+            className={`h-full rounded-full ${zone.predictionLevel === 'High' ? 'bg-emerald-600' : zone.predictionLevel === 'Medium' ? 'bg-amber-500' : 'bg-fb-outline'}`}
+            style={{ width: `${zone.predictionScore}%` }}
+          />
+        </div>
+        <p className="mt-1.5 text-[10px] font-bold text-fb-on-surface-variant">
+          {zone.predictionLevel} predicted activity
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-2">
@@ -787,26 +792,14 @@ function CompactZoneMetric({ icon: Icon, label, value }: { icon: any; label: str
   );
 }
 
-function StrategicAction({ icon: Icon, text }: { icon: any, text: string }) {
+function CompactImpactStat({ icon: Icon, value, label }: { icon: any, value: string, label: string }) {
   return (
-    <div className="flex items-center gap-4 p-3.5 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group cursor-pointer">
-      <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-        <Icon className="w-4 h-4 text-white" />
-      </div>
-      <span className="text-sm font-bold text-white/90">{text}</span>
-      <ArrowUpRight className="w-4 h-4 ml-auto text-white/30 group-hover:text-white transition-colors" />
-    </div>
-  );
-}
-
-function ImpactStat({ icon: Icon, value, label, color, iconColor }: { icon: any, value: string, label: string, color: string, iconColor: string }) {
-  return (
-    <div className={`p-4 rounded-3xl ${color} border border-white/5 backdrop-blur-sm group hover:scale-[1.02] transition-transform`}>
-      <div className={`flex items-center gap-2 ${iconColor} mb-2`}>
-        <Icon className="w-4 h-4" />
+    <div className="rounded-2xl bg-white/10 p-4">
+      <div className="mb-2 flex items-center gap-2 text-[#95d5b2]">
+        <Icon className="h-4 w-4" />
         <span className="text-[9px] font-black uppercase tracking-widest opacity-80">{label}</span>
       </div>
-      <p className="text-xl font-black text-white tracking-tight group-hover:text-fb-primary-fixed transition-colors">{value}</p>
+      <p className="text-xl font-black tracking-tight text-white">{value}</p>
     </div>
   );
 }
