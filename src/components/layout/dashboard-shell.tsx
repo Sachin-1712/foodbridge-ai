@@ -203,6 +203,7 @@ export function DashboardShell({ children, user }: { children: React.ReactNode; 
       {/* =================== AI FAB & CHAT PANEL =================== */}
       {!chatOpen && (
         <button
+          suppressHydrationWarning
           onClick={() => setChatOpen(true)}
           className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[#2D6A4F] text-white shadow-fab flex items-center justify-center hover:scale-105 transition-transform md:bottom-8 md:right-8"
           aria-label="Open Sharebite AI"
