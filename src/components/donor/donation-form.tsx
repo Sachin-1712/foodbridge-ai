@@ -51,6 +51,19 @@ const urgencyLevels = [
   { value: 'high', label: 'High — urgent pickup needed' },
 ];
 
+const timeOptions = Array.from({ length: 96 }, (_, i) => {
+  const hour = Math.floor(i / 4);
+  const minute = (i % 4) * 15;
+  const h24 = hour.toString().padStart(2, '0');
+  const m = minute.toString().padStart(2, '0');
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const h12 = (hour % 12 || 12).toString().padStart(2, '0');
+  return {
+    value: `${h24}:${m}`,
+    label: `${h12}:${m} ${period}`,
+  };
+});
+
 export function DonationForm({ donorArea }: { donorArea?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -291,7 +304,7 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
               </div>
 
               {/* Section 2: Logistics */}
-              <div className="space-y-6 pt-4">
+              <div className="space-y-8 pt-4">
                 <div className="flex items-center gap-3 pb-4 border-b border-fb-outline-variant/5">
                   <div className="p-2 rounded-xl bg-fb-primary/5 text-fb-primary">
                     <MapPin className="w-5 h-5" />
@@ -299,72 +312,84 @@ export function DonationForm({ donorArea }: { donorArea?: string }) {
                   <h3 className="text-sm font-black text-fb-on-surface uppercase tracking-widest">Pickup Details</h3>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Pickup Address</Label>
+                <div className="space-y-8">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-[0.15em] opacity-50 ml-1">Tactical Pickup Address</Label>
                     <div className="relative group">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-fb-on-surface-variant group-focus-within:text-fb-primary transition-colors" />
+                      <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-fb-on-surface-variant group-focus-within:text-fb-primary transition-colors opacity-40 group-focus-within:opacity-100" />
                       <Input
                         value={form.locationName}
                         onChange={(e) => update('locationName', e.target.value)}
-                        placeholder="Enter pickup location..."
+                        placeholder="e.g. 42 Baker Street, Loading Bay 2"
                         required
-                        className="bg-fb-surface-container-low border-fb-outline-variant/5 pl-12 rounded-2xl h-14 font-bold"
+                        className="bg-fb-surface-container-low border-fb-outline-variant/5 pl-14 rounded-2xl h-16 font-black text-xs uppercase tracking-widest transition-all focus:border-fb-primary/30"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Pickup Start</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-[0.15em] opacity-50 ml-1">Pickup Window Start</Label>
                       <div className="relative group">
-                        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-fb-on-surface-variant opacity-40" />
-                        <Input
-                          type="time"
-                          value={form.pickupStart}
-                          onChange={(e) => update('pickupStart', e.target.value)}
-                          required
-                          className="bg-fb-surface-container-low border-fb-outline-variant/5 pl-12 rounded-2xl h-14 font-bold"
-                        />
+                        <Select value={form.pickupStart} onValueChange={(v) => update('pickupStart', v)}>
+                          <SelectTrigger className="bg-fb-surface-container-low border-fb-outline-variant/5 pl-12 rounded-2xl h-16 font-black text-xs uppercase tracking-widest transition-all focus:border-fb-primary/30">
+                            <Clock className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-fb-on-surface-variant opacity-40 group-focus-within:opacity-100 transition-opacity" />
+                            <SelectValue placeholder="Start Time" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-[1.5rem] shadow-ambient-4 max-h-[320px] p-2 border-fb-outline-variant/10">
+                            {timeOptions.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value} className="rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-widest focus:bg-fb-primary/5 focus:text-fb-primary transition-colors cursor-pointer">
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Pickup End</Label>
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-[0.15em] opacity-50 ml-1">Pickup Window End</Label>
                       <div className="relative group">
-                        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-fb-on-surface-variant opacity-40" />
-                        <Input
-                          type="time"
-                          value={form.pickupEnd}
-                          onChange={(e) => update('pickupEnd', e.target.value)}
-                          required
-                          className="bg-fb-surface-container-low border-fb-outline-variant/5 pl-12 rounded-2xl h-14 font-bold"
-                        />
+                        <Select value={form.pickupEnd} onValueChange={(v) => update('pickupEnd', v)}>
+                          <SelectTrigger className="bg-fb-surface-container-low border-fb-outline-variant/5 pl-12 rounded-2xl h-16 font-black text-xs uppercase tracking-widest transition-all focus:border-fb-primary/30">
+                            <Clock className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-fb-on-surface-variant opacity-40 group-focus-within:opacity-100 transition-opacity" />
+                            <SelectValue placeholder="End Time" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-[1.5rem] shadow-ambient-4 max-h-[320px] p-2 border-fb-outline-variant/10">
+                            {timeOptions.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value} className="rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-widest focus:bg-fb-primary/5 focus:text-fb-primary transition-colors cursor-pointer">
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Pickup Urgency</Label>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-[0.15em] opacity-50 ml-1">Logistics Priority</Label>
                     <Select value={form.urgency} onValueChange={(v) => update('urgency', v)}>
-                      <SelectTrigger className="bg-fb-surface-container-low border-fb-outline-variant/5 rounded-2xl h-14 font-bold">
-                        <SelectValue />
+                      <SelectTrigger className="bg-fb-surface-container-low border-fb-outline-variant/5 rounded-2xl h-16 font-black text-xs uppercase tracking-widest transition-all focus:border-fb-primary/30">
+                        <SelectValue placeholder="Select Urgency" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-2xl shadow-2xl">
+                      <SelectContent className="rounded-[1.5rem] shadow-ambient-4 p-2 border-fb-outline-variant/10">
                         {urgencyLevels.map((u) => (
-                          <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                          <SelectItem key={u.value} value={u.value} className="rounded-xl px-4 py-3 text-[11px] font-black uppercase tracking-widest focus:bg-fb-primary/5 focus:text-fb-primary transition-colors cursor-pointer">
+                            {u.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40 ml-1">Notes (Optional)</Label>
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-fb-on-surface-variant uppercase tracking-[0.15em] opacity-50 ml-1">Mission Notes (Optional)</Label>
                     <Textarea
                       value={form.notes}
                       onChange={(e) => update('notes', e.target.value)}
                       placeholder="Storage instructions, access notes, or allergens..."
                       rows={4}
-                      className="bg-fb-surface-container-low border-fb-outline-variant/5 rounded-[1.5rem] resize-none font-medium p-4"
+                      className="bg-fb-surface-container-low border-fb-outline-variant/5 rounded-[2rem] resize-none font-medium p-6 focus:border-fb-primary/30 transition-all text-sm leading-relaxed"
                     />
                   </div>
                 </div>

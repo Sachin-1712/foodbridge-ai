@@ -247,7 +247,7 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
   };
 
   return (
-    <div className="h-[calc(100vh-7rem)] flex flex-col gap-6 overflow-hidden">
+    <div className="flex flex-col gap-8 pb-10">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
@@ -277,9 +277,9 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* LEFT COLUMN: Delivery Jobs */}
-        <div className="lg:col-span-3 flex flex-col gap-4 min-h-0">
+        <div className="lg:col-span-3 lg:sticky lg:top-8 flex flex-col gap-4 h-fit">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-[11px] font-black text-fb-on-surface-variant uppercase tracking-[0.2em] flex items-center gap-2">
               <Navigation className="w-3.5 h-3.5" />
@@ -291,7 +291,7 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto px-1 pb-4 space-y-3 custom-scrollbar">
+          <div className="flex flex-col gap-3 pr-1">
             {activeJobs.length > 0 ? (
               activeJobs.map((job) => {
                 const isSelected = selectedJobId === job.id;
@@ -355,16 +355,16 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
         </div>
 
         {/* CENTER COLUMN: Visual Console */}
-        <div className="lg:col-span-6 flex flex-col gap-4 min-h-0">
+        <div className="lg:col-span-6 lg:sticky lg:top-8 flex flex-col gap-4 h-[calc(100vh-140px)] min-h-[500px]">
           <MapViewport 
             job={selectedJob} 
           />
         </div>
 
         {/* RIGHT COLUMN: Intelligence & Mission Control */}
-        <div className="lg:col-span-3 flex flex-col gap-5 overflow-hidden min-h-0">
+        <div className="lg:col-span-3 flex flex-col gap-6 h-fit min-w-0">
           {selectedJob ? (
-            <div className="flex-1 flex flex-col gap-5 overflow-y-auto pr-1 pb-4 custom-scrollbar min-h-0">
+            <>
               {/* Job ID Card */}
               <div className="p-6 rounded-[2rem] bg-white border border-fb-outline-variant/10 shadow-sm relative overflow-hidden group">
                 <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-fb-primary/5 rounded-full blur-2xl group-hover:bg-fb-primary/10 transition-all duration-700" />
@@ -389,7 +389,7 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
               <IntelligencePanel job={selectedJob} />
 
               {/* Real-time Progress Card */}
-              <div className="p-6 rounded-[2rem] bg-white border border-fb-outline-variant/10 shadow-sm flex-1">
+              <div className="p-6 rounded-[2rem] bg-white border border-fb-outline-variant/10 shadow-sm">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-[11px] font-black text-fb-on-surface-variant uppercase tracking-[0.2em]">
                     Delivery Status
@@ -441,28 +441,41 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
                 </div>
               </div>
 
-              {/* Status Dropdown */}
               {!terminalStatuses.includes(selectedJob.status) && (
-                <div className="sticky bottom-0 pt-2 bg-gradient-to-t from-[#f8f9f5] via-[#f8f9f5] to-transparent">
+                <div className="pt-2">
                   <Select
                     value={selectedJob.status}
                     onValueChange={(value) => handleStatusUpdate(selectedJob.id, value as DeliveryStatus)}
                     disabled={loading === selectedJob.id}
                   >
-                    <SelectTrigger className="h-16 w-full rounded-[1.75rem] border-none bg-fb-primary px-6 text-white shadow-ambient-3 active:scale-[0.97] transition-all data-[placeholder]:text-white [&_svg]:text-white">
-                      <div className="flex min-w-0 flex-col items-start gap-1">
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70">
-                          {loading === selectedJob.id ? 'Syncing...' : 'Update Status'}
-                        </span>
-                        <SelectValue />
+                    <SelectTrigger className="h-auto w-full rounded-[2rem] border-none bg-gradient-to-br from-[#0f5238] to-[#1b4332] p-6 text-white shadow-ambient-3 hover:scale-[1.01] active:scale-[0.98] transition-all flex flex-col items-start gap-5 relative overflow-hidden group">
+                      <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/5 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+                      
+                      <div className="relative z-10 flex items-center gap-2">
+                        <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md">
+                          <Zap className="w-4 h-4 text-[#95d5b2] fill-[#95d5b2]/20" />
+                        </div>
+                        <span className="text-[10px] font-black text-[#95d5b2] uppercase tracking-[0.2em]">Update Status</span>
+                      </div>
+
+                      <div className="relative z-10 flex items-center justify-between w-full">
+                        <div className="text-2xl font-black tracking-tight leading-none">
+                          <SelectValue />
+                        </div>
+                        <div className="p-2 rounded-full bg-white/5 border border-white/10">
+                          <ChevronRight className="w-5 h-5 text-[#95d5b2]" />
+                        </div>
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-fb-outline-variant/20 bg-white p-2 shadow-ambient-3">
+                    <SelectContent className="rounded-[2rem] border-fb-outline-variant/10 bg-white p-3 shadow-ambient-4 min-w-[240px]">
+                      <div className="px-3 py-2 mb-2 border-b border-fb-outline-variant/5">
+                        <p className="text-[9px] font-black text-fb-on-surface-variant uppercase tracking-widest opacity-40">Tactical Options</p>
+                      </div>
                       {statusOptions.map((status) => (
                         <SelectItem
                           key={status}
                           value={status}
-                          className="rounded-xl px-3 py-2 text-xs font-bold text-fb-on-surface focus:bg-fb-primary/10 focus:text-fb-primary"
+                          className="rounded-xl px-4 py-3 text-xs font-black text-fb-on-surface uppercase tracking-wider focus:bg-fb-primary/5 focus:text-fb-primary transition-colors cursor-pointer"
                         >
                           {statusLabels[status]}
                         </SelectItem>
@@ -471,7 +484,7 @@ export function DeliveryDashboard({ jobs, driverName }: DeliveryDashboardProps) 
                   </Select>
                 </div>
               )}
-            </div>
+            </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8 bg-fb-surface-container-lowest/30 rounded-[2.5rem] border border-fb-outline-variant/10 text-center">
               <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center mb-4 shadow-sm">
