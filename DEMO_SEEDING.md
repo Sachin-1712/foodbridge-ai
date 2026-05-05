@@ -1,6 +1,6 @@
 # Demo Seeding
 
-Last updated: 2026-05-04
+Last updated: 2026-05-05
 
 ## Purpose
 
@@ -69,6 +69,19 @@ NGOs:
 - Hope Shelter Network
 - Annadaan Bengaluru
 
+## Exact Demo NGO User Location
+
+The role-verified NGO demo user is:
+
+- Email: `ngo@sharebite.demo`
+- Profile name: Priya Menon
+- Organization: Bengaluru Food Relief Trust
+- Area: JP Nagar, Bangalore
+- Latitude/longitude: `12.9063, 77.5857`
+- Seeded daily capacity: 240 meals
+
+This is the location shown in NGO Analytics for the demo NGO context.
+
 ## Seeded Donations
 
 - `35 Veg Biryani Meal Boxes` from Koramangala Kitchen: `open`, urgent
@@ -111,6 +124,21 @@ Analytics:
 
 - The NGO analytics data uses Bangalore activity summaries and realistic meal-rescue counts.
 - Analytics snapshots are seeded for multiple NGOs so the chatbot can summarize live NGO data.
+- Donation Source Zones on NGO Analytics are calculated from live Supabase `donations` rows, not from `analytics_snapshots`.
+- Source-zone scoring uses pickup area, quantity, urgency, status, pickup time, and common food pattern.
+- High-Need Community Zones are demo-level predictions from seeded Bangalore community need indicators plus current donation availability.
+
+High-Need Community Zones used for the demo:
+
+- Ejipura
+- KR Market / City Market
+- Shivajinagar
+- Cottonpet
+- Yeshwanthpur
+- Hebbal Kempapura
+- Bommanahalli
+- Peenya
+- DJ Halli
 
 ## Current Seed Counts
 

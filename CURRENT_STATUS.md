@@ -345,6 +345,46 @@ Phase 9 verification:
 - `npm run seed:demo` was run again after workflow testing to restore the Bangalore baseline.
 - `npm run build` passed.
 
+## Donation Zones Client Feedback Pass
+
+Donation Zones now explains and uses its data source more clearly.
+
+Changes:
+
+- Confirmed NGO Analytics derives Donation Source Zones from live Supabase `donations` rows, not `analytics_snapshots` or static data.
+- The analytics page is marked dynamic and now refreshes zone data every 10 seconds while open.
+- Added a manual `Refresh zone data` button that revalidates the NGO Analytics page.
+- Added visible data-source labels:
+  - `Data source: Live Supabase donations table`
+  - `Uses: pickup area, quantity, urgency, status, pickup time`
+  - `Last updated: [time] IST`
+- Improved pickup-area detection so source zones use `locationName`, donation title, and notes.
+- Updated source-zone scoring to make large donations matter:
+  - recent donation count: 25%
+  - total quantity/meals donated: 25%
+  - active/open donations: 20%
+  - urgent donations: 15%
+  - pickup-time pattern consistency: 10%
+  - common food pattern: 5%
+- Added a separate `High-Need Community Zones` view for demo-level suitable-zone prediction.
+- High-need predictions are kept separate from donor source zones and are labelled as seeded community need indicators plus current donation availability, not trained ML.
+- Added a suitable-zone recommendation that can connect a large active donation to the highest-need community zone.
+- Confirmed the demo NGO account location:
+  - Email: `ngo@sharebite.demo`
+  - Profile: Priya Menon
+  - Organization: Bengaluru Food Relief Trust
+  - Area: JP Nagar, Bangalore
+  - Coordinates: `12.9063, 77.5857`
+
+Verification:
+
+- `npm run seed:demo` passed.
+- Created a test `220 HSR Layout Demo Meal Packs` donation through the donor API.
+- HSR Layout source-zone quantity increased from 22 to 242, confirming new large donations influence zone scoring from live donation rows.
+- NGO Analytics returned HTTP 200 and included the live source labels and high-need zone tab.
+- `npm run seed:demo` was run again after testing to restore the Bangalore baseline.
+- `npm run build` passed.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.

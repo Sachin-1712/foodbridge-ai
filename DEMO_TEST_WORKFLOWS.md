@@ -372,3 +372,41 @@ npm run build
 ```
 
 Result: Passed on 2026-05-05.
+
+## Donation Zones Client Feedback Test
+
+Purpose: verify Donation Source Zones update from live donation rows, quantity influences scoring, and High-Need Community Zones appear separately.
+
+Setup:
+
+```bash
+npm run seed:demo
+```
+
+Result: Passed. The reseed restored the Bangalore demo baseline before testing.
+
+Validated checks:
+
+- NGO Analytics uses live Supabase `donations` rows for Donation Source Zones.
+- The visible data-source note says `Data source: Live Supabase donations table`.
+- The visible field note says source zones use pickup area, quantity, urgency, status, and pickup time.
+- Created `220 HSR Layout Demo Meal Packs` through the donor donation API.
+- HSR Layout source-zone quantity increased from 22 to 242, confirming a new large donation affects the zone queue.
+- NGO Analytics page returned HTTP 200 after the donation was created.
+- The page included `Donation Source Zones` and `High-Need Community Zones` as separate views.
+- In-app browser verification confirmed the High-Need Community Zones tab shows the suitable-zone recommendation, high-need queue, seeded areas, and demo NGO location.
+- The High-Need Community Zones view is labelled as demo-level and based on seeded community need indicators plus current donation availability.
+- Demo NGO location was verified from Supabase:
+  - Priya Menon
+  - Bengaluru Food Relief Trust
+  - JP Nagar, Bangalore
+  - `12.9063, 77.5857`
+- `npm run seed:demo` was run again after the live-update test to restore the Bangalore baseline.
+
+Build check:
+
+```bash
+npm run build
+```
+
+Result: Passed on 2026-05-05.

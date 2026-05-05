@@ -45,8 +45,12 @@ Status key:
 
 - [x] 5. Donation zones + map/prediction insights
   - NGO Analytics now shows Donation Zones & Predictions.
-  - Groups current Supabase donation rows by supported Bangalore areas.
+  - Groups live Supabase `donations` rows by supported Bangalore areas.
+  - Visible UI labels now explain the data source, fields used, and last update time.
+  - Manual refresh plus timed revalidation keep the zone queue updated after new donations.
   - Shows zone cards with donation count, total quantity, common food type, active/open donations, completed donations, predicted peak window, and recommendation.
+  - Quantity now directly affects the 0-100 source-zone prediction score, so large donations can move an area upward.
+  - Added a separate High-Need Community Zones view for demo-level suitable-zone prediction using seeded community need indicators plus current donation availability.
   - Includes a Bangalore map context panel and ranked zone list.
   - Labeled honestly as rule-based: "AI-assisted prediction based on recent donation patterns."
 
