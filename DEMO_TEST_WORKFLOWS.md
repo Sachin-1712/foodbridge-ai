@@ -410,3 +410,50 @@ npm run build
 ```
 
 Result: Passed on 2026-05-05.
+
+Live zone update demo script:
+
+1. Open NGO Analytics and note the current HSR Layout quantity/score in Donation Source Zones.
+2. Create a large donor donation from HSR Layout, such as 200+ cooked meal packs.
+3. Return to NGO Analytics and click `Refresh zone data`, or wait for the page refresh interval.
+4. Confirm HSR Layout quantity and prediction score increase in the Zone Queue.
+5. Run `npm run seed:demo` after testing to restore the clean Bangalore baseline.
+
+## NGO Analytics Impact And Partners Polish Test
+
+Purpose: verify the right-side analytics cards look populated and use current Bangalore demo data.
+
+Setup:
+
+```bash
+npm run seed:demo
+```
+
+Result: Passed. The reseed restored the Bangalore demo baseline.
+
+Validated checks:
+
+- Impact Mix shows multiple categories:
+  - Cooked Meals
+  - Bakery
+  - Beverages
+  - Fresh Produce
+  - Event Leftovers
+- Estimated impact values are non-zero when delivered donations exist.
+- `View All Partners` opens a side drawer.
+- The partner drawer shows real seeded Bangalore donors:
+  - Koramangala Kitchen
+  - Indiranagar Bakery House
+  - Whitefield Tech Park Canteen
+  - HSR Fresh Foods
+  - Jayanagar Event Caterers
+  - Malleshwaram Tiffin Centre
+- Partner rows include area, donation count, total meal units, and latest status.
+
+Build check:
+
+```bash
+npm run build
+```
+
+Result: Passed on 2026-05-05.

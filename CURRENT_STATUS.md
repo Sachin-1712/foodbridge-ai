@@ -385,6 +385,35 @@ Verification:
 - `npm run seed:demo` was run again after testing to restore the Bangalore baseline.
 - `npm run build` passed.
 
+## NGO Analytics Polish Pass
+
+NGO Analytics now has more realistic impact and partner cards without changing Donation Zones logic.
+
+Changes:
+
+- Impact Mix now uses live Supabase donation rows and shows:
+  - Cooked Meals
+  - Bakery
+  - Beverages
+  - Fresh Produce
+  - Event Leftovers
+- Impact Mix shows meal-unit totals plus percentages instead of a sparse/empty chart.
+- Estimated CO2 Offset and Estimated Water now use delivered meal units from current donation rows.
+- Added simple code comments for the demo assumptions:
+  - 2.5kg CO2e avoided per rescued meal
+  - 150L water footprint per rescued meal
+- Top Partnerships now ranks real Bangalore seeded donors by donation count, then total meal units.
+- Removed generic partner names from the visible Top Partnerships card.
+- `View All Partners` now opens a side drawer with donor name, area, donation count, meal units, and latest status.
+
+Verification:
+
+- `npm run seed:demo` passed.
+- In-app browser check confirmed all five Impact Mix categories are visible.
+- In-app browser check confirmed estimated CO2/water values are non-zero.
+- In-app browser check confirmed `View All Partners` opens and lists real donors including Koramangala Kitchen, Indiranagar Bakery House, Whitefield Tech Park Canteen, HSR Fresh Foods, Jayanagar Event Caterers, and Malleshwaram Tiffin Centre.
+- `npm run build` passed.
+
 ## Known Remaining Issues
 
 - `npm run lint` still has pre-existing lint failures and was not made a Phase 1 blocker.

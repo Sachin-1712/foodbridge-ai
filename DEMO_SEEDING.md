@@ -127,6 +127,9 @@ Analytics:
 - Donation Source Zones on NGO Analytics are calculated from live Supabase `donations` rows, not from `analytics_snapshots`.
 - Source-zone scoring uses pickup area, quantity, urgency, status, pickup time, and common food pattern.
 - High-Need Community Zones are demo-level predictions from seeded Bangalore community need indicators plus current donation availability.
+- Impact Mix uses live donation rows to show Cooked Meals, Bakery, Beverages, Fresh Produce, and Event Leftovers.
+- Top Partnerships uses seeded donor profiles and live donation rows, so it shows real Bangalore donors ranked by donation count and meal units.
+- Estimated CO2 and water impact use delivered meal units from seeded donations.
 
 High-Need Community Zones used for the demo:
 

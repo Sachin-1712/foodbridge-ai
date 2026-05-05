@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getNGOStats, getAnalyticsForNGO, getDonationsByNGO, getAllDonations, getNGOProfileByUserId } from '@/lib/store';
+import { getNGOStats, getAnalyticsForNGO, getDonationsByNGO, getAllDonations, getNGOProfileByUserId, getAllUsers } from '@/lib/store';
 import { NGOAnalytics } from '@/components/ngo/ngo-analytics';
 import { RevalidationTimer } from '@/components/shared/revalidation-timer';
 
@@ -16,6 +16,7 @@ export default async function NGOAnalyticsPage() {
   const donations = await getDonationsByNGO(user.id);
   const zoneDonations = await getAllDonations();
   const ngoProfile = await getNGOProfileByUserId(user.id);
+  const donorProfiles = (await getAllUsers()).filter((profile) => profile.role === 'donor');
 
   return (
     <>
@@ -24,6 +25,7 @@ export default async function NGOAnalyticsPage() {
         analytics={analytics}
         donations={donations}
         zoneDonations={zoneDonations}
+        donorProfiles={donorProfiles}
         ngoName={user.organizationName}
         ngoArea={ngoProfile?.area || user.area}
         ngoLatitude={ngoProfile?.latitude}

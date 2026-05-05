@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
-import { Donation, AnalyticsSnapshot } from '@/types';
+import { Donation, AnalyticsSnapshot, User } from '@/types';
 import {
   Package,
   Utensils,
@@ -52,6 +53,7 @@ interface NGOAnalyticsProps {
   analytics: AnalyticsSnapshot[];
   donations: Donation[];
   zoneDonations?: Donation[];
+  donorProfiles?: User[];
   ngoName: string;
   ngoArea?: string;
   ngoLatitude?: number;
@@ -60,6 +62,12 @@ interface NGOAnalyticsProps {
 }
 
 const COLORS = ['#2D6A4F', '#7d562d', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
+const partnerColors = [
+  'bg-emerald-100 text-emerald-700',
+  'bg-amber-100 text-amber-700',
+  'bg-sky-100 text-sky-700',
+  'bg-fb-primary/10 text-fb-primary',
+];
 
 const categoryLabels: Record<string, string> = {
   cooked_meals: 'Cooked Meals',
@@ -69,6 +77,23 @@ const categoryLabels: Record<string, string> = {
   dairy: 'Dairy',
   beverages: 'Beverages',
   other: 'Other',
+};
+
+type ImpactMixItem = {
+  name: string;
+  value: number;
+  donations: number;
+  percentage: number;
+};
+
+type PartnerSummary = {
+  id: string;
+  name: string;
+  area: string;
+  donationCount: number;
+  totalQuantity: number;
+  latestStatus: string;
+  initials: string;
 };
 
 const bangaloreZones = [
@@ -155,6 +180,91 @@ const topCount = (items: string[]) => {
   }, {});
   return Object.values(counts).sort((a, b) => b - a)[0] || 0;
 };
+
+const statusLabels: Record<string, string> = {
+  open: 'Open',
+  matched: 'Matched',
+  accepted: 'Accepted',
+  pickup_assigned: 'Pickup Assigned',
+  picked_up: 'Picked Up',
+  in_transit: 'In Transit',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+};
+
+const getInitials = (name: string) => name
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part[0]?.toUpperCase())
+  .join('') || 'DN';
+
+const getImpactCategory = (donation: Donation) => {
+  const haystack = `${donation.title} ${donation.foodType} ${donation.notes} ${donation.locationName}`.toLowerCase();
+
+  if (haystack.includes('event') || haystack.includes('cater') || haystack.includes('corporate') || haystack.includes('office') || haystack.includes('training')) {
+    return 'Event Leftovers';
+  }
+
+  if (donation.category === 'bakery') return 'Bakery';
+  if (donation.category === 'beverages') return 'Beverages';
+  if (donation.category === 'fresh_produce') return 'Fresh Produce';
+
+  return 'Cooked Meals';
+};
+
+function buildImpactMix(donations: Donation[]): ImpactMixItem[] {
+  const preferredOrder = ['Cooked Meals', 'Bakery', 'Beverages', 'Fresh Produce', 'Event Leftovers'];
+  const totals = preferredOrder.reduce<Record<string, { value: number; donations: number }>>((acc, name) => {
+    acc[name] = { value: 0, donations: 0 };
+    return acc;
+  }, {});
+
+  donations.forEach((donation) => {
+    const category = getImpactCategory(donation);
+    totals[category].value += donation.quantity;
+    totals[category].donations += 1;
+  });
+
+  const totalUnits = Object.values(totals).reduce((sum, item) => sum + item.value, 0);
+
+  return preferredOrder.map((name) => ({
+    name,
+    value: totals[name].value,
+    donations: totals[name].donations,
+    percentage: totalUnits > 0 ? Math.round((totals[name].value / totalUnits) * 100) : 0,
+  }));
+}
+
+function buildPartnerSummaries(donations: Donation[], donors: User[]): PartnerSummary[] {
+  const donorById = new Map(donors.map((donor) => [donor.id, donor]));
+  const grouped = donations.reduce<Record<string, Donation[]>>((acc, donation) => {
+    acc[donation.donorId] = acc[donation.donorId] || [];
+    acc[donation.donorId].push(donation);
+    return acc;
+  }, {});
+
+  return Object.entries(grouped)
+    .map(([donorId, donorDonations]) => {
+      const donor = donorById.get(donorId);
+      const sorted = [...donorDonations].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      const name = donor?.organizationName || donor?.name || sorted[0]?.locationName?.split(',')[0] || 'Bangalore Donor';
+
+      return {
+        id: donorId,
+        name,
+        area: donor?.area || detectZone(sorted[0]) || 'Bangalore',
+        donationCount: donorDonations.length,
+        totalQuantity: donorDonations.reduce((sum, donation) => sum + donation.quantity, 0),
+        latestStatus: statusLabels[sorted[0]?.status || 'open'] || sorted[0]?.status || 'Open',
+        initials: getInitials(name),
+      };
+    })
+    .sort((a, b) => {
+      if (b.donationCount !== a.donationCount) return b.donationCount - a.donationCount;
+      return b.totalQuantity - a.totalQuantity;
+    });
+}
 
 function buildZoneInsights(donations: Donation[], referenceTime: number): ZoneInsight[] {
   const rawZones = bangaloreZones
@@ -283,6 +393,7 @@ export function NGOAnalytics({
   analytics,
   donations,
   zoneDonations = donations,
+  donorProfiles = [],
   ngoName,
   ngoArea,
   ngoLatitude,
@@ -291,6 +402,7 @@ export function NGOAnalytics({
 }: NGOAnalyticsProps) {
   const router = useRouter();
   const [zoneView, setZoneView] = useState<'source' | 'need'>('source');
+  const [partnersOpen, setPartnersOpen] = useState(false);
   // Prepare chart data
   const dailyData = analytics.map((a) => ({
     date: new Date(a.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
@@ -298,13 +410,9 @@ export function NGOAnalytics({
     meals: a.mealsRescued,
   }));
 
-  // Category distribution
-  const categoryCount: Record<string, number> = {};
-  donations.forEach((d) => {
-    const cat = categoryLabels[d.category] || d.category;
-    categoryCount[cat] = (categoryCount[cat] || 0) + 1;
-  });
-  const categoryData = Object.entries(categoryCount).map(([name, value]) => ({ name, value }));
+  const categoryData = buildImpactMix(zoneDonations);
+  const partnerSummaries = buildPartnerSummaries(zoneDonations, donorProfiles);
+  const topPartners = partnerSummaries.slice(0, 4);
 
   // Acceptance trend
   const acceptanceData = analytics.map((a) => ({
@@ -312,9 +420,13 @@ export function NGOAnalytics({
     minutes: a.avgAcceptanceTime,
   }));
 
-  // Impact calculations
-  const co2Saved = (stats.mealsRescued * 2.5).toFixed(1); // 2.5kg CO2 per meal (est)
-  const waterSaved = (stats.mealsRescued * 150).toLocaleString(); // 150L per meal (est)
+  const deliveredMeals = zoneDonations
+    .filter((donation) => donation.status === 'delivered')
+    .reduce((sum, donation) => sum + donation.quantity, 0);
+  const completedMealUnits = deliveredMeals || stats.mealsRescued;
+  // Demo estimates: one rescued meal avoids about 2.5kg CO2e and 150L water footprint.
+  const co2Saved = (completedMealUnits * 2.5).toFixed(1);
+  const waterSaved = (completedMealUnits * 150).toLocaleString();
 
   const zoneReferenceTime = new Date(lastUpdated || zoneDonations[0]?.createdAt || Date.now()).getTime();
   const zoneInsights = buildZoneInsights(zoneDonations, zoneReferenceTime);
@@ -638,29 +750,30 @@ export function NGOAnalytics({
               </CardTitle>
             </CardHeader>
             <CardContent className="px-8 pb-8 space-y-6">
-              {[
-                { name: 'City Market Central', type: 'Supermarket', count: 12, color: 'bg-emerald-100 text-emerald-700', initials: 'CM' },
-                { name: 'Artisan Bakery Co.', type: 'Bakery', count: 8, color: 'bg-amber-100 text-amber-700', initials: 'AB' },
-                { name: 'Green Garden Bistro', type: 'Restaurant', count: 5, color: 'bg-fb-primary/10 text-fb-primary', initials: 'GG' },
-              ].map((partner) => (
+              {topPartners.map((partner, index) => (
                 <div key={partner.name} className="flex items-center justify-between group cursor-pointer hover:bg-fb-surface-container-low/50 p-2 -m-2 rounded-2xl transition-all">
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm shadow-sm transition-transform group-hover:scale-105 ${partner.color}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm shadow-sm transition-transform group-hover:scale-105 ${partnerColors[index % partnerColors.length]}`}>
                       {partner.initials}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-black text-fb-on-surface group-hover:text-fb-primary transition-colors">{partner.name}</p>
-                      <p className="text-[10px] text-fb-outline font-bold uppercase tracking-wider mt-0.5">{partner.type}</p>
+                      <p className="text-[10px] text-fb-outline font-bold uppercase tracking-wider mt-0.5">{partner.area}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-black text-fb-on-surface">{partner.count}</p>
+                    <p className="text-lg font-black text-fb-on-surface">{partner.donationCount}</p>
                     <p className="text-[9px] text-fb-outline font-black uppercase tracking-widest">Donations</p>
                   </div>
                 </div>
               ))}
               
-              <Button variant="outline" className="w-full rounded-2xl border-fb-outline-variant/30 text-fb-on-surface-variant font-bold text-xs uppercase tracking-widest h-12 hover:bg-fb-surface-container-low transition-all">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setPartnersOpen(true)}
+                className="w-full rounded-2xl border-fb-outline-variant/30 text-fb-on-surface-variant font-bold text-xs uppercase tracking-widest h-12 hover:bg-fb-surface-container-low transition-all"
+              >
                 View All Partners
               </Button>
             </CardContent>
@@ -675,7 +788,7 @@ export function NGOAnalytics({
             </CardHeader>
             <CardContent className="px-8 pb-8">
               <div className="h-40">
-                {categoryData.length > 0 ? (
+                {categoryData.some((item) => item.value > 0) ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -703,7 +816,7 @@ export function NGOAnalytics({
                 )}
               </div>
               <div className="mt-4 grid grid-cols-1 gap-2">
-                {categoryData.slice(0, 4).map((item, i) => (
+                {categoryData.map((item, i) => (
                   <div key={item.name} className="flex items-center justify-between rounded-2xl bg-fb-surface-container-low p-3">
                     <div className="flex min-w-0 items-center gap-2">
                       <div
@@ -712,7 +825,7 @@ export function NGOAnalytics({
                       />
                       <span className="truncate text-xs font-bold text-fb-on-surface-variant">{item.name}</span>
                     </div>
-                    <span className="text-sm font-black text-fb-on-surface">{item.value}</span>
+                    <span className="text-sm font-black text-fb-on-surface">{item.value} <span className="text-[9px] text-fb-outline">({item.percentage}%)</span></span>
                   </div>
                 ))}
               </div>
@@ -762,13 +875,36 @@ export function NGOAnalytics({
           </Card>
 
           <Card className="border-none bg-[#0f5238] text-white shadow-ambient-2 rounded-[2rem]">
+            <CardHeader className="px-5 pt-5 pb-0">
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-[#95d5b2]">
+                Estimated Impact
+              </CardTitle>
+            </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4 p-5">
-              <CompactImpactStat icon={Leaf} value={`${co2Saved}kg`} label="CO2 Offset" />
-              <CompactImpactStat icon={Activity} value={waterSaved} label="Water (L)" />
+              <CompactImpactStat icon={Leaf} value={`${co2Saved}kg`} label="Est. CO2 Offset" />
+              <CompactImpactStat icon={Activity} value={waterSaved} label="Est. Water (L)" />
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <Sheet open={partnersOpen} onOpenChange={setPartnersOpen}>
+        <SheetContent className="w-full overflow-y-auto border-fb-outline-variant/20 bg-white p-0 sm:max-w-2xl">
+          <SheetHeader className="border-b border-fb-outline-variant/10 p-6">
+            <SheetTitle className="text-2xl font-black tracking-tight text-fb-on-surface">
+              All Donor Partners
+            </SheetTitle>
+            <SheetDescription className="text-sm font-medium text-fb-on-surface-variant">
+              Ranked from current Bangalore donation rows by donation count, then meal units.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="space-y-3 p-6">
+            {partnerSummaries.map((partner, index) => (
+              <PartnerRow key={partner.id} partner={partner} rank={index + 1} />
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
@@ -1056,6 +1192,38 @@ function CompactImpactStat({ icon: Icon, value, label }: { icon: any, value: str
         <span className="text-[9px] font-black uppercase tracking-widest opacity-80">{label}</span>
       </div>
       <p className="text-xl font-black tracking-tight text-white">{value}</p>
+    </div>
+  );
+}
+
+function PartnerRow({ partner, rank }: { partner: PartnerSummary; rank: number }) {
+  return (
+    <div className="rounded-[1.5rem] border border-fb-outline-variant/10 bg-fb-surface-container-lowest p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-fb-primary/10 text-sm font-black text-fb-primary">
+            {partner.initials}
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="border-none bg-fb-surface-container text-[8px] font-black uppercase tracking-widest text-fb-on-surface-variant">
+                #{rank}
+              </Badge>
+              <p className="break-words text-sm font-black text-fb-on-surface">{partner.name}</p>
+            </div>
+            <p className="mt-1 text-xs font-semibold text-fb-on-surface-variant">{partner.area}</p>
+            <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-fb-outline">
+              Latest status: {partner.latestStatus}
+            </p>
+          </div>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="text-lg font-black text-fb-on-surface">{partner.donationCount}</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-fb-outline">Donations</p>
+          <p className="mt-2 text-sm font-black text-fb-primary">{partner.totalQuantity}</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-fb-outline">Meal units</p>
+        </div>
+      </div>
     </div>
   );
 }
